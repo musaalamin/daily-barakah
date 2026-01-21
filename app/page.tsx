@@ -173,7 +173,12 @@ export default function QuranApp() {
           <div className="max-w-2xl mx-auto flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold tracking-wide font-serif">Daily Barakah</h1>
-              <div className="flex flex-col mt-1">
+              {/* WAQAF DEDICATION */}
+              <p className="text-[10px] text-[#95D5B2] font-medium mt-1 tracking-wide">
+                Waqaf from Abdulkareem & Khalifa
+              </p>
+              
+              <div className="flex flex-col mt-3 border-t border-[#2D6A4F] pt-2">
                 <div className="flex items-center gap-1 text-[#95D5B2] text-xs uppercase tracking-widest">
                   <MapPin size={12} />
                   <span>{locationName}</span>
@@ -300,6 +305,11 @@ export default function QuranApp() {
                 </div>
               );
             })}
+            
+            {/* Footer Signature */}
+            <div className="text-center pt-8 pb-4 opacity-40">
+              <p className="text-[10px] font-medium text-[#1B4332]">Waqaf from Abdulkareem & Khalifa</p>
+            </div>
           </div>
         )}
       </main>
@@ -369,7 +379,9 @@ export default function QuranApp() {
                </div>
             </div>
 
-            <h2 className="text-xl font-bold text-center text-gray-900 mb-2">Share the Barakah</h2>
+            <h2 className="text-xl font-bold text-center text-gray-900 mb-1">Share the Barakah</h2>
+            <p className="text-[10px] text-center text-[#2D6A4F] font-bold mb-4 uppercase tracking-wider">Waqaf from Abdulkareem & Khalifa</p>
+            
             <p className="text-gray-500 text-sm text-center mb-6">"Whoever guides someone to goodness will have a reward like one who did it."</p>
             
             <button 
