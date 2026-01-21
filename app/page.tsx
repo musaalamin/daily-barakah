@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Moon, Sun, Play, Pause, Info, Loader2, MapPin, Repeat, X, Mic2, ChevronDown } from 'lucide-react';
+import { BookOpen, Moon, Sun, Play, Pause, Info, Loader2, MapPin, Repeat, X, Mic2, ChevronDown, Heart, Share2 } from 'lucide-react';
 
 // --- CONSTANTS ---
 const SURAHS = [
@@ -45,9 +45,10 @@ export default function QuranApp() {
   const [locationName, setLocationName] = useState("Detecting Location...");
   const [hijriDate, setHijriDate] = useState("");
 
-  // Tasbih State
+  // Modals State
   const [showTasbih, setShowTasbih] = useState(false);
   const [tasbihCount, setTasbihCount] = useState(0);
+  const [showSupport, setShowSupport] = useState(false);
 
   // --- 1. GET PRAYER TIMES ---
   useEffect(() => {
@@ -80,27 +81,21 @@ export default function QuranApp() {
     }
   }, []);
 
-  // --- 2. FETCH QURAN DATA (ROBUST DUAL SOURCE) ---
+  // --- 2. FETCH QURAN DATA ---
   const fetchSurahData = async (surahId: number) => {
     setLoading(true);
     setPlayingIndex(null);
     setIsPlaying(false);
 
     try {
-      // Fetch A: Arabic Text & English (Sahih International ID 20)
       const quranComRes = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surahId}?language=en&words=true&translations=20&per_page=160&fields=text_uthmani`);
       const quranData = await quranComRes.json();
 
-      // Fetch B: Hausa (QuranEnc - Guaranteed Latin Script)
-      // We use 'hausa_gummi' edition from QuranEnc
       const hausaRes = await fetch(`https://quranenc.com/api/v1/translation/sura/hausa_gummi/${surahId}`);
       const hausaData = await hausaRes.json();
 
-      // Combine Data safely
       const processed = quranData.verses.map((verse: any, index: number) => {
         const engObj = verse.translations.find((t: any) => t.resource_id === 20);
-        
-        // Match Hausa by index (QuranEnc returns a 'result' array)
         const hausaText = hausaData.result[index]?.translation || "Tarjama tana lodawa...";
         
         return {
@@ -108,7 +103,7 @@ export default function QuranApp() {
           number: verse.verse_number,
           arabic: verse.text_uthmani,
           english: engObj ? engObj.text.replace(/<[^>]*>?/gm, '') : "Translation loading...",
-          hausa: hausaText, // Guaranteed Latin Script from QuranEnc
+          hausa: hausaText,
           audioUrl: `${activeReciter.url}${String(surahId).padStart(3, '0')}${String(verse.verse_number).padStart(3, '0')}.mp3`
         };
       });
@@ -116,7 +111,6 @@ export default function QuranApp() {
       setAyahs(processed);
     } catch (error) {
       console.error("Error fetching Surah:", error);
-      alert("Please check your internet connection.");
     } finally {
       setLoading(false);
     }
@@ -165,11 +159,16 @@ export default function QuranApp() {
     }
   };
 
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link copied! Share it on WhatsApp.");
+  };
+
   return (
     <div className="min-h-screen bg-[#FDFCF8] font-sans pb-32 text-gray-900" suppressHydrationWarning>
       
       {/* HEADER */}
-      <header className="bg-[#1B4332] text-white rounded-b-3xl shadow-xl sticky top-0 z-50 overflow-hidden">
+      <header className="bg-[#1B4332] text-white rounded-b-3xl shadow-xl sticky top-0 z-30 overflow-hidden">
         <div className="p-6 pb-4">
           <div className="max-w-2xl mx-auto flex justify-between items-start">
             <div>
@@ -230,7 +229,6 @@ export default function QuranApp() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-6 mt-2">
-        
         {/* TABS */}
         <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-gray-200">
           {SURAHS.map((surah) => (
@@ -307,6 +305,18 @@ export default function QuranApp() {
       </main>
 
       {/* FLOATING CONTROLS */}
+      
+      {/* 1. Share/Reward Button (Left) */}
+      <div className="fixed bottom-6 left-6 z-40">
+         <button 
+          onClick={() => setShowSupport(true)}
+          className="bg-red-100 text-red-600 p-4 rounded-full shadow-xl hover:scale-110 transition-transform border-2 border-red-200"
+        >
+          <Heart size={24} fill="currentColor" />
+        </button>
+      </div>
+
+      {/* 2. Play/Pause (Center) */}
       <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[#1B4332] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 z-40 hover:scale-105 transition-transform">
          <button onClick={() => playingIndex !== null && togglePlay(playingIndex)}>
            {isPlaying ? <Pause size={24} /> : <Play size={24} fill="currentColor" />}
@@ -316,7 +326,7 @@ export default function QuranApp() {
          </div>
       </div>
 
-      {/* TASBIH BUTTON */}
+      {/* 3. Tasbih (Right) */}
       <button 
         onClick={() => setShowTasbih(true)}
         className="fixed bottom-6 right-6 bg-[#D8F3DC] text-[#1B4332] p-4 rounded-full shadow-xl hover:scale-110 transition-transform z-40 border-2 border-[#1B4332]"
@@ -344,6 +354,35 @@ export default function QuranApp() {
           </div>
         </div>
       )}
+
+      {/* SHARE MODAL (Pure Sadaqah) */}
+      {showSupport && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-sm shadow-2xl relative">
+            <button onClick={() => setShowSupport(false)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+              <X size={24} />
+            </button>
+            
+            <div className="flex justify-center mb-4">
+               <div className="bg-red-100 p-3 rounded-full text-red-500">
+                 <Heart size={32} fill="currentColor" />
+               </div>
+            </div>
+
+            <h2 className="text-xl font-bold text-center text-gray-900 mb-2">Share the Barakah</h2>
+            <p className="text-gray-500 text-sm text-center mb-6">"Whoever guides someone to goodness will have a reward like one who did it."</p>
+            
+            <button 
+              onClick={copyLink}
+              className="w-full flex items-center justify-center gap-3 bg-[#2D6A4F] text-white py-4 rounded-xl font-bold active:scale-95 transition-transform shadow-lg"
+            >
+              <Share2 size={20} />
+              Copy Link to Share
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
