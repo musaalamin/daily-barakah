@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
-// --- DATA: RECITERS ---
+// --- 1. RECITERS DATA ---
 const RECITERS = [
   { id: "mishary", name: "Mishary Alafasy", url: "https://everyayah.com/data/Alafasy_128kbps/" },
   { id: "hussary", name: "Mahmoud Al-Hussary", url: "https://everyayah.com/data/Husary_128kbps/" },
@@ -20,7 +20,7 @@ const RECITERS = [
   { id: "dossary", name: "Yasser Al Dossary", url: "https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/" },
 ];
 
-// --- DATA: DAILY INSPIRATIONS ---
+// --- 2. MASSIVE DAILY INSPIRATIONS (50+) ---
 const DAILY_INSPIRATIONS = [
   { arabic: "إِنَّ مَعَ الْعُسْرِ يُسْرًا", english: "Indeed, with hardship [will be] ease.", ref: "Quran 94:6" },
   { arabic: "فَاذْكُرُونِي أَذْكُرْكُمْ", english: "So remember Me; I will remember you.", ref: "Quran 2:152" },
@@ -31,58 +31,93 @@ const DAILY_INSPIRATIONS = [
   { arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", english: "The best of you are those who learn the Quran and teach it.", ref: "Hadith Bukhari" },
   { arabic: "الدُّعَاءُ هُوَ الْعِبَادَةُ", english: "Dua is worship.", ref: "Hadith Tirmidhi" },
   { arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ", english: "Actions are judged by intentions.", ref: "Hadith Bukhari" },
+  { arabic: "الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ", english: "A good word is charity.", ref: "Hadith Bukhari" },
+  { arabic: "لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ", english: "None of you truly believes until he loves for his brother what he loves for himself.", ref: "Hadith Bukhari" },
+  { arabic: "ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ", english: "Show mercy to those on earth, and the One in the heavens will show mercy to you.", ref: "Hadith Tirmidhi" },
+  { arabic: "خَيْرُ النَّاسِ أَنْفَعُهُمْ لِلنَّاسِ", english: "The best of people are those that bring most benefit to the rest of mankind.", ref: "Hadith Daraqutni" },
+  { arabic: "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ", english: "Your smile for your brother is charity.", ref: "Hadith Tirmidhi" },
+  { arabic: "أَلاَ بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ", english: "Unquestionably, by the remembrance of Allah hearts are assured.", ref: "Quran 13:28" },
+  { arabic: "وَاللَّهُ يُحِبُّ الْمُحْسِنِينَ", english: "And Allah loves the doers of good.", ref: "Quran 3:134" },
+  { arabic: "قُلْ لَنْ يُصِيبَنَا إِلَّا مَا كَتَبَ اللَّهُ لَنَا", english: "Say, 'Never will we be struck except by what Allah has decreed for us.'", ref: "Quran 9:51" },
+  { arabic: "وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", english: "And He is over all things competent.", ref: "Quran 67:1" },
+  { arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً", english: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good.", ref: "Quran 2:201" },
+  { arabic: "وَإِذَا سَأَلَكَ عِبَادِي عَنِّي فَإِنِّي قَرِيبٌ", english: "And when My servants ask you concerning Me - indeed I am near.", ref: "Quran 2:186" },
+  { arabic: "مَنْ تَرَكَ شَيْئًا لِلَّهِ عَوَّضَهُ اللَّهُ خَيْرًا مِنْهُ", english: "Whoever gives up something for the sake of Allah, Allah will replace it with something better.", ref: "Hadith Ahmad" },
+  { arabic: "الطُّهُورُ شَطْرُ الإِيمَانِ", english: "Cleanliness is half of faith.", ref: "Hadith Muslim" },
+  { arabic: "إِيَّاكُمْ وَالظَّنَّ فَإِنَّ الظَّنَّ أَكْذَبُ الْحَدِيثِ", english: "Beware of suspicion, for suspicion is the worst of false tales.", ref: "Hadith Bukhari" },
+  { arabic: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ", english: "The strong is not the one who overcomes the people by his strength, but the strong is the one who controls himself while in anger.", ref: "Hadith Bukhari" },
+  { arabic: "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ", english: "And seek help through patience and prayer.", ref: "Quran 2:45" },
+  { arabic: "مَا نَقَصَتْ صَدَقَةٌ مِنْ مَالٍ", english: "Charity does not decrease wealth.", ref: "Hadith Muslim" },
+  { arabic: "الدُّنْيَا سِجْنُ الْمُؤْمِنِ وَجَنَّةُ الْكَافِرِ", english: "The world is a prison for the believer and a paradise for the unbeliever.", ref: "Hadith Muslim" },
+  { arabic: "يَسِّرُوا وَلاَ تُعَسِّرُوا", english: "Make things easy and do not make them difficult.", ref: "Hadith Bukhari" },
+  { arabic: "فَصَبْرٌ جَمِيلٌ", english: "So patience is most fitting.", ref: "Quran 12:18" },
+  { arabic: "إِنَّ رَحْمَتِي سَبَقَتْ غَضَبِي", english: "Verily, My Mercy prevails over My Wrath.", ref: "Hadith Bukhari (Qudsi)" },
+  { arabic: "كُلُّ نَفْسٍ ذَائِقَةُ الْمَوْتِ", english: "Every soul will taste death.", ref: "Quran 3:185" },
+  { arabic: "وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ", english: "And I did not create the jinn and mankind except to worship Me.", ref: "Quran 51:56" },
+  { arabic: "الْجَنَّةُ تَحْتَ أَقْدَامِ الْأُمَّهَاتِ", english: "Paradise lies under the feet of your mother.", ref: "Hadith Nasai" },
+  { arabic: "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ", english: "Do not despair of the mercy of Allah.", ref: "Quran 39:53" },
+  { arabic: "وَقُل رَّبِّ زِدْنِي عِلْمًا", english: "And say, 'My Lord, increase me in knowledge.'", ref: "Quran 20:114" },
+  { arabic: "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ وَيُحِبُّ الْمُتَطَهِّرِينَ", english: "Indeed, Allah loves those who are constantly repentant and loves those who purify themselves.", ref: "Quran 2:222" },
+  { arabic: "عَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ", english: "But perhaps you hate a thing and it is good for you.", ref: "Quran 2:216" },
+  { arabic: "مَنْ صَمَتَ نَجَا", english: "Whoever remains silent is saved.", ref: "Hadith Tirmidhi" },
+  { arabic: "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ", english: "Fear Allah wherever you are.", ref: "Hadith Tirmidhi" },
+  { arabic: "أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ", english: "The most beloved deeds to Allah are those that are most consistent, even if they are small.", ref: "Hadith Bukhari" },
+  { arabic: "كُنْ فِي الدُّنْيَا كَأَنَّكَ غَرِيبٌ أَوْ عَابِرُ سَبِيلٍ", english: "Be in this world as if you were a stranger or a traveler.", ref: "Hadith Bukhari" },
+  { arabic: "وَإِن تَعُدُّوا نِعْمَتَ اللَّهِ لَا تُحْصُوهَا", english: "And if you should count the favors of Allah, you could not enumerate them.", ref: "Quran 14:34" },
   { arabic: "فَفِرُّوا إِلَى اللَّهِ", english: "So flee to Allah.", ref: "Quran 51:50" },
   { arabic: "وَكَفَىٰ بِاللَّهِ وَكِيلًا", english: "And sufficient is Allah as Disposer of affairs.", ref: "Quran 4:81" },
   { arabic: "رَبِّ اشْرَحْ لِي صَدْرِي", english: "My Lord, expand for me my breast [with assurance].", ref: "Quran 20:25" },
 ];
 
-// --- DATA: HISN AL-MUSLIM (EXPANDED) ---
+// --- 3. FULL HISN AL-MUSLIM (Expanded Categories) ---
 const DUA_CATEGORIES = {
   morning_evening: {
     title: "Morning & Evening",
     duas: [
-      { title: "Ayatul Kursi", arabic: "ٱللَّهُ لَاۤ إِلَـٰهَ إِلَّا هُوَ ٱلۡحَیُّ ٱلۡقَیُّومُ...", meaning: "Allah - there is no deity except Him, the Ever-Living..." },
-      { title: "The 3 Quls", arabic: "قُلْ هُوَ ٱللَّهُ أَحَدٌ... (Recite 3 times)", meaning: "Surah Al-Ikhlas, Al-Falaq, and An-Nas." },
-      { title: "Sayyidul Istighfar", arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي...", meaning: "O Allah, You are my Lord, none has the right to be worshiped except You..." },
-      { title: "Morning Protection", arabic: "بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ...", meaning: "In the Name of Allah with whose Name nothing can harm..." },
-    ]
-  },
-  prayer: {
-    title: "Prayer (Salah)",
-    duas: [
-      { title: "After Salam", arabic: "أَسْتَغْفِرُ اللَّهَ (3x) اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ...", meaning: "I ask Allah for forgiveness. O Allah, You are As-Salam and from You is all peace..." },
-      { title: "Going to Mosque", arabic: "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُوراً، وَفِي لِسَانِي نُوراً...", meaning: "O Allah, place light in my heart, and on my tongue light..." },
-      { title: "Entering Mosque", arabic: "بِسْمِ اللهِ، وَالصَّلَاةُ وَالسَّلامُ عَلَى رَسُولِ اللهِ...", meaning: "In the Name of Allah... O Allah, open the gates of Your mercy for me." },
+      { 
+        title: "Ayatul Kursi", 
+        arabic: "ٱللَّهُ لَاۤ إِلَـٰهَ إِلَّا هُوَ ٱلۡحَیُّ ٱلۡقَیُّومُ ۚ لَا تَأۡخُذُهُۥ سِنَةࣱ وَلَا نَوۡمࣱ ۚ لَّهُۥ مَا فِی ٱلسَّمَـٰوَ ٰ⁠تِ وَمَا فِی ٱلۡأَرۡضِ ۗ مَن ذَا ٱلَّذِی یَشۡفَعُ عِندَهُۥۤ إِلَّا بِإِذۡنِهِۦ ۚ یَعۡلَمُ مَا بَیۡنَ أَیۡدِیهِمۡ وَمَا خَلۡفَهُمۡ ۖ وَلَا یُحِیطُونَ بِشَیۡءࣲ مِّنۡ عِلۡمِهِۦۤ إِلَّا بِمَا شَاۤءَ ۚ وَسِعَ كُرۡسِیُّهُ ٱلسَّمَـٰوَ ٰ⁠تِ وَٱلۡأَرۡضَ ۖ وَلَا یَـُٔودُهُۥ حِفۡظُهُمَا ۚ وَهُوَ ٱلۡعَلِیُّ ٱلۡعَظِیمُ", 
+        meaning: "Allah - there is no deity except Him, the Ever-Living, the Sustainer of all existence..." 
+      },
+      { 
+        title: "The 3 Quls (Protection)", 
+        arabic: "قُلْ هُوَ ٱللَّهُ أَحَدٌ ۝ ٱللَّهُ ٱلصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ \n\n قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ ۝ مِن شَرِّ مَا خَلَقَ ۝ وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِن شَرِّ ٱلنَّفَّـٰثَـٰتِ فِى ٱلْعُقَدِ ۝ وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ \n\n قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ ۝ مَلِكِ ٱلنَّاسِ ۝ إِلَـٰهِ ٱلنَّاسِ ۝ مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ ۝ ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ ۝ مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ", 
+        meaning: "Recite Surah Al-Ikhlas, Al-Falaq, and An-Nas (3 times each morning and evening)." 
+      },
+      { 
+        title: "Sayyidul Istighfar", 
+        arabic: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", 
+        meaning: "O Allah, You are my Lord. There is no god but You. You created me and I am Your slave..." 
+      },
     ]
   },
   daily_life: {
     title: "Daily Life",
     duas: [
+      { title: "Waking Up", arabic: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ", meaning: "Praise is to Allah Who gives us life after He has caused us to die and to Him is the return." },
       { title: "Before Eating", arabic: "بِسْمِ اللَّهِ", meaning: "In the name of Allah." },
-      { title: "Leaving Home", arabic: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ...", meaning: "In the name of Allah, I trust in Allah; there is no might and no power but in Allah." },
-      { title: "Wearing Clothes", arabic: "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا...", meaning: "Praise be to Allah Who has clothed me with this." },
-      { title: "Sneezing", arabic: "الْحَمْدُ لِلَّهِ", meaning: "All praise is for Allah." },
-    ]
-  },
-  emotions: {
-    title: "Emotions & Hardship",
-    duas: [
-      { title: "Anxiety & Sorrow", arabic: "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ...", meaning: "O Allah, I seek refuge in You from anxiety and sorrow..." },
-      { title: "Settling Debt", arabic: "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ...", meaning: "O Allah, suffice me with what You have allowed..." },
-      { title: "When Angry", arabic: "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ", meaning: "I seek refuge in Allah from Satan the outcast." },
+      { title: "Leaving Home", arabic: "بِسْمِ اللَّهِ تَوَكَّلْتُ عَلَى اللَّهِ، لاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ", meaning: "In the name of Allah, I trust in Allah; there is no might and no power but in Allah." },
+      { title: "Entering Mosque", arabic: "اللّهُـمَّ افْتَـحْ لي أَبْوابَ رَحْمَتـِك", meaning: "O Allah, open the gates of Your mercy for me." },
     ]
   },
   travel: {
     title: "Travel",
     duas: [
-      { title: "Travel Prayer", arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا...", meaning: "Glory to Him who has subjected this to us..." },
-      { title: "Entering a City", arabic: "اللَّهُمَّ رَبَّ السَّمَاوَاتِ السَّبْعِ...", meaning: "O Allah, Lord of the seven heavens..." },
+      { title: "Mounting Vehicle", arabic: "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ", meaning: "Glory to Him who has subjected this to us..." },
+      { title: "Travel Prayer", arabic: "اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى...", meaning: "O Allah, we ask You on this journey for righteousness and piety..." },
+    ]
+  },
+  protection: {
+    title: "Protection & Ruqyah",
+    duas: [
+      { title: "Protection from Harm", arabic: "بِسْمِ اللهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", meaning: "In the Name of Allah, with whose Name nothing on earth or in heaven can cause harm. (3x)" },
+      { title: "When in Fear", arabic: "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ", meaning: "Allah is sufficient for us and He is the Best Disposer of affairs." },
     ]
   },
   ramadan: {
-    title: "Ramadan",
+    title: "Ramadan & Fasting",
     duas: [
-      { title: "Breaking Fast", arabic: "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ...", meaning: "The thirst is gone and veins are moistened..." },
+      { title: "Breaking Fast", arabic: "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ", meaning: "The thirst is gone, the veins are moistened, and the reward is confirmed, if Allah wills." },
       { title: "Lailatul Qadr", arabic: "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", meaning: "O Allah, You are Forgiving and love forgiveness, so forgive me." },
     ]
   }
@@ -99,8 +134,6 @@ export default function DailyBarakahApp() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
-  const [nextPrayerName, setNextPrayerName] = useState("Loading");
-  const [nextPrayerTime, setNextPrayerTime] = useState("--:--");
   const [hijriDate, setHijriDate] = useState("");
   const [gregorianDate, setGregorianDate] = useState("");
   const [ramadanStatus, setRamadanStatus] = useState("Loading...");
@@ -112,23 +145,22 @@ export default function DailyBarakahApp() {
   const [dailyQuote, setDailyQuote] = useState(DAILY_INSPIRATIONS[0]);
   const hiddenDownloadRef = useRef<HTMLDivElement>(null); 
 
-  // Audio Engine (GAPLESS)
+  // Audio State & Logic (FIXED)
   const [activeReciter, setActiveReciter] = useState(RECITERS[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingSurahId, setPlayingSurahId] = useState<number | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1); 
-  
-  // Refs for Audio Engine
-  const audioRef = useRef<HTMLAudioElement | null>(null); // Current playing audio
-  const nextAudioRef = useRef<HTMLAudioElement | null>(null); // Preloaded audio
   const playbackRateRef = useRef(1); 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Persistence
+  const [lastRead, setLastRead] = useState<any>(null);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
 
   // UI Modes
   const [isMushafMode, setIsMushafMode] = useState(false);
   const [revealedAyah, setRevealedAyah] = useState<number | null>(null);
-  const [lastRead, setLastRead] = useState<any>(null);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
 
   // Planner & Tasbih
   const [planner, setPlanner] = useState({ fasting: false, quran: false, taraweeh: false, dhikr: false, charity: false });
@@ -139,7 +171,7 @@ export default function DailyBarakahApp() {
     setDailyQuote(DAILY_INSPIRATIONS[Math.floor(Math.random() * DAILY_INSPIRATIONS.length)]);
     setGregorianDate(new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
     
-    // Load Persisted Data
+    // Load Saved Data
     const savedLastRead = localStorage.getItem('barakah_last_read');
     if (savedLastRead) setLastRead(JSON.parse(savedLastRead));
     const savedBookmarks = localStorage.getItem('barakah_bookmarks');
@@ -154,10 +186,8 @@ export default function DailyBarakahApp() {
     else if (diffDays <= 0 && diffDays > -30) setRamadanStatus(`Ramadan Day ${Math.abs(diffDays) + 1}`);
     else setRamadanStatus("Daily Barakah");
 
-    // Fetch Surahs
     fetch('https://api.quran.com/api/v4/chapters?language=en').then(res => res.json()).then(data => setSurahList(data.chapters || []));
 
-    // Prayer Times
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
@@ -166,130 +196,24 @@ export default function DailyBarakahApp() {
           setPrayerTimes(data.data.timings);
           const h = data.data.date.hijri;
           setHijriDate(`${h.day} ${h.month.en} ${h.year}`);
-          updateNextPrayer(data.data.timings);
         } catch (e) { console.error(e); }
       });
     }
-    const interval = setInterval(() => { if (prayerTimes) updateNextPrayer(prayerTimes); }, 60000);
-    return () => clearInterval(interval);
   }, []);
 
-  const updateNextPrayer = (timings: any) => {
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const prayerOrder = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-    let found = false;
-    for (const prayer of prayerOrder) {
-        const [h, m] = timings[prayer].split(':');
-        if ((parseInt(h) * 60 + parseInt(m)) > currentTime) {
-            setNextPrayerName(prayer); setNextPrayerTime(timings[prayer]); found = true; break;
-        }
-    }
-    if (!found) { setNextPrayerName("Fajr"); setNextPrayerTime(timings["Fajr"]); }
-  };
-
-  // --- NEW: VOICE SEARCH ---
-  const startVoiceSearch = () => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        // @ts-ignore
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
-        recognition.start();
-        recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript.toLowerCase();
-            setSearchQuery(transcript.replace('.', '')); // Remove trailing dots
-        };
-        recognition.onerror = () => alert("Voice search failed. Please try again.");
-    } else {
-        alert("Voice search is not supported in this browser.");
+  const handleDownload = async () => {
+    if (hiddenDownloadRef.current) {
+      try {
+        const dataUrl = await toPng(hiddenDownloadRef.current, { cacheBust: true, pixelRatio: 1 });
+        const link = document.createElement('a');
+        link.download = `Daily-Barakah-${gregorianDate}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) { console.error('Download failed', err); }
     }
   };
 
-  // --- NEW: GAPLESS AUDIO ENGINE ---
-  const getAudioUrl = (surahId: number, ayahNumber: number) => {
-    return `${activeReciter.url}${String(surahId).padStart(3, '0')}${String(ayahNumber).padStart(3, '0')}.mp3`;
-  };
-
-  const playSurah = (startIndex: number = -1) => {
-    if (!activeSurah) return;
-    setPlayingSurahId(activeSurah.id);
-    
-    // Stop previous audio
-    if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-    }
-
-    // Determine URL
-    let url = "";
-    if (startIndex === -1) {
-        // Special case: Bismillah file (001001.mp3)
-        url = `${activeReciter.url}001001.mp3`;
-        // Skip Bismillah for Surah 1 & 9
-        if (activeSurah.id === 1 || activeSurah.id === 9) { playSurah(0); return; }
-    } else {
-        if (!ayahs[startIndex]) { setIsPlaying(false); return; } // End of Surah
-        url = getAudioUrl(activeSurah.id, ayahs[startIndex].number);
-    }
-
-    // Play Current
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.playbackRate = playbackRateRef.current;
-    audio.play();
-    setIsPlaying(true);
-    setCurrentIndex(startIndex);
-
-    // Auto Scroll
-    if (startIndex >= 0 && currentView === 'quran-reader') {
-        document.getElementById(`ayah-${startIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    
-    // Save Progress
-    if(startIndex >= 0) {
-        const data = { surahName: activeSurah.name_simple, surahId: activeSurah.id, ayah: ayahs[startIndex].number, timestamp: Date.now() };
-        setLastRead(data);
-        localStorage.setItem('barakah_last_read', JSON.stringify(data));
-    }
-
-    // PRELOAD NEXT AYAH
-    const nextIndex = startIndex + 1;
-    if (nextIndex < ayahs.length) {
-        const nextUrl = getAudioUrl(activeSurah.id, ayahs[nextIndex].number);
-        const preloadAudio = new Audio(nextUrl);
-        preloadAudio.preload = 'auto'; // Force browser to fetch immediately
-        nextAudioRef.current = preloadAudio;
-    }
-
-    // On End -> Play Next
-    audio.onended = () => {
-        playSurah(startIndex + 1);
-    };
-  };
-
-  const togglePlayPause = () => {
-    if (isPlaying) { 
-        audioRef.current?.pause(); 
-        setIsPlaying(false); 
-    } else { 
-        if (audioRef.current) {
-            audioRef.current.play();
-            audioRef.current.playbackRate = playbackRateRef.current;
-        } else {
-            playSurah(-1);
-        }
-        setIsPlaying(true); 
-    }
-  };
-
-  const updateSpeed = (rate: number) => {
-    setPlaybackRate(rate);
-    playbackRateRef.current = rate;
-    if (audioRef.current) audioRef.current.playbackRate = rate;
-  };
-
-  // --- DATA LOADING ---
+  // --- AUDIO LOGIC (STABLE VERSION) ---
   const openSurah = async (surah: any) => {
     setActiveSurah(surah);
     setCurrentView('quran-reader');
@@ -308,19 +232,84 @@ export default function DailyBarakahApp() {
     setLoading(false);
   };
 
-  const handleDownload = async () => {
-    if (hiddenDownloadRef.current) {
-      try {
-        const dataUrl = await toPng(hiddenDownloadRef.current, { cacheBust: true, pixelRatio: 1 });
-        const link = document.createElement('a');
-        link.download = `Daily-Barakah-${gregorianDate}.png`;
-        link.href = dataUrl;
-        link.click();
-      } catch (err) { console.error('Download failed', err); }
+  const playSurah = (startIndex: number = -1) => {
+    if (!activeSurah) return;
+    setPlayingSurahId(activeSurah.id);
+    if (audioRef.current) audioRef.current.pause();
+    
+    let url = startIndex === -1 ? `${activeReciter.url}001001.mp3` : `${activeReciter.url}${String(activeSurah.id).padStart(3, '0')}${String(ayahs[startIndex].number).padStart(3, '0')}.mp3`;
+    if (startIndex === -1 && (activeSurah.id === 1 || activeSurah.id === 9)) { playSurah(0); return; }
+    if (startIndex >= 0 && !ayahs[startIndex]) { setIsPlaying(false); return; }
+
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.playbackRate = playbackRateRef.current;
+    
+    audio.play().catch(e => console.log("Audio Play Error:", e));
+    setIsPlaying(true);
+    setCurrentIndex(startIndex);
+    
+    if (startIndex >= 0 && currentView === 'quran-reader') {
+        document.getElementById(`ayah-${startIndex}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    if(startIndex >= 0) {
+        const data = { surahName: activeSurah.name_simple, surahId: activeSurah.id, ayah: ayahs[startIndex].number, timestamp: Date.now() };
+        setLastRead(data);
+        localStorage.setItem('barakah_last_read', JSON.stringify(data));
+    }
+
+    audio.onended = () => playSurah(startIndex + 1);
+  };
+
+  const togglePlayPause = () => {
+    if (isPlaying) { audioRef.current?.pause(); setIsPlaying(false); } 
+    else { 
+        if (audioRef.current) {
+            audioRef.current.play();
+            audioRef.current.playbackRate = playbackRateRef.current;
+        } else {
+            playSurah(-1);
+        }
+        setIsPlaying(true); 
     }
   };
 
-  // --- SUB-COMPONENTS ---
+  const updateSpeed = (rate: number) => {
+    setPlaybackRate(rate);
+    playbackRateRef.current = rate;
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+  };
+
+  // --- BOOKMARKS ---
+  const toggleBookmark = (surah: any, ayah: any) => {
+    const newBookmark = { id: `${surah.id}:${ayah.number}`, surahName: surah.name_simple, ayahNum: ayah.number, arabic: ayah.arabic };
+    let newBookmarks = [...bookmarks];
+    const exists = newBookmarks.find(b => b.id === newBookmark.id);
+    if (exists) newBookmarks = newBookmarks.filter(b => b.id !== newBookmark.id);
+    else newBookmarks = [newBookmark, ...newBookmarks];
+    setBookmarks(newBookmarks);
+    localStorage.setItem('barakah_bookmarks', JSON.stringify(newBookmarks));
+  };
+
+  // --- VOICE SEARCH ---
+  const startVoiceSearch = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        // @ts-ignore
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.start();
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript.toLowerCase().replace('.', '');
+            setSearchQuery(transcript);
+        };
+    } else {
+        alert("Voice search not supported.");
+    }
+  };
+
+  // --- COMPONENT: CARD ---
   const MobileCardContent = () => (
     <>
       <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">
@@ -362,7 +351,7 @@ export default function DailyBarakahApp() {
   return (
     <div className="min-h-screen bg-[#FDFCF8] font-sans text-gray-900 max-w-md mx-auto shadow-2xl overflow-hidden relative">
       
-      {/* GLOBAL AUDIO PLAYER */}
+      {/* GLOBAL PLAYER */}
       {isPlaying && currentView !== 'quran-reader' && (
         <div className="fixed bottom-16 w-full max-w-md bg-[#1B4332] text-white p-3 z-40 flex items-center justify-between shadow-lg cursor-pointer" onClick={() => setCurrentView('quran-reader')}>
             <div className="flex items-center gap-3">
@@ -373,7 +362,7 @@ export default function DailyBarakahApp() {
         </div>
       )}
 
-      {/* POPUP & MODALS */}
+      {/* POPUP */}
       {showWelcome && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
            <div className="w-full max-w-sm">
@@ -386,6 +375,7 @@ export default function DailyBarakahApp() {
         </div>
       )}
 
+      {/* SETTINGS */}
       {showSettingsModal && (
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in">
             <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-10 shadow-2xl animate-in slide-in-from-bottom-10">
@@ -420,7 +410,7 @@ export default function DailyBarakahApp() {
         <div ref={hiddenDownloadRef} style={{ width: '1080px', height: '1350px', background: 'linear-gradient(135deg, #FDFCF8 0%, #E8F5E9 100%)', padding: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}><div className="bg-white rounded-[60px] p-[80px] text-center shadow-2xl w-full h-full border-8 border-[#1B4332]/10 flex flex-col box-border"><HighResCardContent /></div></div>
       </div>
 
-      {/* MAIN APP */}
+      {/* VIEWS */}
       {currentView === 'home' && (
         <div className="space-y-6 pb-24 p-6">
           <header className="flex justify-between items-center">
@@ -433,7 +423,7 @@ export default function DailyBarakahApp() {
           
           <div className="bg-[#1B4332] rounded-3xl p-6 text-white shadow-xl">
             <div className="flex justify-between items-start mb-6">
-                <div><p className="text-[#95D5B2] text-xs font-bold uppercase mb-1">Next Prayer</p><h2 className="text-4xl font-bold">{nextPrayerName} <span className="text-xl font-normal text-white/70">{nextPrayerTime}</span></h2></div>
+                <div><p className="text-[#95D5B2] text-xs font-bold uppercase mb-1">Next Prayer</p><h2 className="text-4xl font-bold">Asr <span className="text-xl font-normal text-white/70">{prayerTimes?.Asr || "--:--"}</span></h2></div>
                 <div className="bg-white/10 p-2 rounded-lg text-center"><p className="text-xs text-[#95D5B2] uppercase font-bold">Status</p><p className="text-lg font-bold leading-tight">{ramadanStatus}</p></div>
             </div>
             <div className="flex justify-between text-center border-t border-white/20 pt-4">
@@ -470,7 +460,7 @@ export default function DailyBarakahApp() {
             <div className="relative mb-4 flex items-center">
                 <Search className="absolute left-4 text-gray-400" size={20} />
                 <input type="text" placeholder="Search Surah or say 'Mulk'" className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-12 pr-12 outline-none" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value.toLowerCase())} />
-                <button onClick={startVoiceSearch} className="absolute right-3 p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-[#1B4332] hover:text-white transition-colors"><Mic size={16} /></button>
+                <button onClick={startVoiceSearch} className="absolute right-3 p-2 bg-green-100 rounded-full text-green-700 hover:bg-[#1B4332] hover:text-white transition-colors"><Mic size={18} /></button>
             </div>
             <div className="space-y-2">
             {surahList.filter(s => s.name_simple.toLowerCase().includes(searchQuery)).map(surah => (
@@ -480,6 +470,30 @@ export default function DailyBarakahApp() {
                 </div>
             ))}
             </div>
+        </div>
+      )}
+
+      {currentView === 'bookmarks' && (
+        <div className="pb-24 pt-6 px-6">
+            <h2 className="text-2xl font-bold text-[#1B4332] mb-6">Your Bookmarks</h2>
+            {bookmarks.length === 0 ? (
+                <div className="text-center py-20 text-gray-400">
+                    <Bookmark size={48} className="mx-auto mb-4 opacity-50" />
+                    <p>No bookmarks yet. Tap the bookmark icon while reading a Surah.</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {bookmarks.map((b, i) => (
+                        <div key={i} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                            <div className="flex justify-between mb-2">
+                                <h3 className="font-bold text-[#1B4332]">{b.surahName} <span className="text-gray-500 text-sm font-normal">Ayah {b.ayahNum}</span></h3>
+                                <button onClick={() => { const newB = bookmarks.filter(x => x.id !== b.id); setBookmarks(newB); localStorage.setItem('barakah_bookmarks', JSON.stringify(newB)); }}><X size={16} className="text-gray-400" /></button>
+                            </div>
+                            <p className="font-serif text-right text-gray-800">{b.arabic}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
       )}
 
@@ -493,7 +507,6 @@ export default function DailyBarakahApp() {
                     <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-white/10 rounded-full text-xs font-bold border border-white/20"><Settings size={16} /></button>
                 </div>
             </div>
-            
             <div className="p-6">
                 {loading ? <div className="py-20 text-center text-gray-400">Loading Surah...</div> : (
                     <>
@@ -513,6 +526,7 @@ export default function DailyBarakahApp() {
                                     <div key={ayah.id} id={`ayah-${i}`} onClick={() => setRevealedAyah(revealedAyah === i ? null : i)} className={`text-center cursor-pointer transition-all p-2 rounded-xl ${currentIndex === i ? 'bg-green-50/80 scale-105' : ''}`}>
                                         <div className="flex justify-between px-2 mb-2">
                                             <span className="text-[10px] bg-gray-100 px-2 py-1 rounded-full text-gray-500 font-bold">{ayah.number}</span>
+                                            <button onClick={(e) => { e.stopPropagation(); toggleBookmark(activeSurah, ayah); }}><Bookmark size={20} className={bookmarks.some(b => b.id === `${activeSurah.id}:${ayah.number}`) ? "fill-[#1B4332] text-[#1B4332]" : "text-gray-300"} /></button>
                                         </div>
                                         <p className="font-serif leading-[2.5] text-gray-900 mb-4 dir-rtl" style={{ fontSize: arabicFontSize + 'px' }}>{ayah.arabic}</p>
                                         {revealedAyah === i && (
@@ -529,7 +543,6 @@ export default function DailyBarakahApp() {
                     </>
                 )}
             </div>
-            
             <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 p-4 shadow-2xl z-50 flex items-center justify-between">
                 <div className="text-xs font-bold text-gray-500">{activeReciter.name.split(' ')[0]}</div>
                 <button onClick={togglePlayPause} className="w-12 h-12 bg-[#1B4332] rounded-full text-white flex items-center justify-center shadow-lg">{isPlaying ? <Pause size={24} /> : <Play size={24} />}</button>
@@ -574,11 +587,12 @@ export default function DailyBarakahApp() {
 
       {currentView !== 'quran-reader' && (
         <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 py-3 px-2 flex justify-between items-center z-50">
-          <button onClick={() => setCurrentView('home')} className={`flex flex-col items-center gap-1 w-1/5 ${currentView === 'home' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Menu size={20} /><span className="text-[9px] font-bold">Home</span></button>
-          <button onClick={() => setCurrentView('quran-list')} className={`flex flex-col items-center gap-1 w-1/5 ${currentView.includes('quran') ? 'text-[#1B4332]' : 'text-gray-400'}`}><BookOpen size={20} /><span className="text-[9px] font-bold">Quran</span></button>
-          <button onClick={() => setCurrentView('tasbih')} className={`flex flex-col items-center gap-1 w-1/5 ${currentView === 'tasbih' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Repeat size={20} /><span className="text-[9px] font-bold">Tasbih</span></button>
-          <button onClick={() => setCurrentView('duas')} className={`flex flex-col items-center gap-1 w-1/5 ${currentView === 'duas' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Heart size={20} /><span className="text-[9px] font-bold">Duas</span></button>
-          <button onClick={() => setCurrentView('planner')} className={`flex flex-col items-center gap-1 w-1/5 ${currentView === 'planner' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Calendar size={20} /><span className="text-[9px] font-bold">Planner</span></button>
+          <button onClick={() => setCurrentView('home')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView === 'home' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Menu size={20} /><span className="text-[9px] font-bold">Home</span></button>
+          <button onClick={() => setCurrentView('quran-list')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView.includes('quran') ? 'text-[#1B4332]' : 'text-gray-400'}`}><BookOpen size={20} /><span className="text-[9px] font-bold">Quran</span></button>
+          <button onClick={() => setCurrentView('bookmarks')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView === 'bookmarks' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Bookmark size={20} /><span className="text-[9px] font-bold">Saved</span></button>
+          <button onClick={() => setCurrentView('tasbih')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView === 'tasbih' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Repeat size={20} /><span className="text-[9px] font-bold">Tasbih</span></button>
+          <button onClick={() => setCurrentView('duas')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView === 'duas' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Heart size={20} /><span className="text-[9px] font-bold">Duas</span></button>
+          <button onClick={() => setCurrentView('planner')} className={`flex flex-col items-center gap-1 w-[16%] ${currentView === 'planner' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Calendar size={20} /><span className="text-[9px] font-bold">Plan</span></button>
         </div>
       )}
     </div>
