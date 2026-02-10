@@ -20,7 +20,7 @@ export default function DailyBarakahApp() {
   const [activeCategory, setActiveCategory] = useState('morning_evening'); 
   const [showShamzan, setShowShamzan] = useState(false);
   
-  // FORCE POPUP TO SHOW ON LOAD
+  // POPUP STATE
   const [showWelcome, setShowWelcome] = useState(false);
 
   // Data
@@ -89,7 +89,7 @@ export default function DailyBarakahApp() {
 
   // --- INIT EFFECT ---
   useEffect(() => {
-    // 1. Show Popup Immediately
+    // 1. Show Popup Immediately (The beautiful welcome)
     setTimeout(() => setShowWelcome(true), 500);
 
     // 2. Set Dates
@@ -114,7 +114,7 @@ export default function DailyBarakahApp() {
     // 5. Fetch Surahs
     fetch('https://api.quran.com/api/v4/chapters?language=en').then(res => res.json()).then(data => setSurahList(data.chapters || []));
 
-    // 6. Prayer Times (Try-Catch for Location Block)
+    // 6. Prayer Times
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
@@ -126,7 +126,7 @@ export default function DailyBarakahApp() {
           updateNextPrayer(data.data.timings);
         } catch (e) { console.error("Prayer time error:", e); }
       }, (err) => {
-         console.warn("Location access denied. Showing default.");
+         console.warn("Location access denied.");
          setNextPrayerName("Location Required");
       });
     }
@@ -146,7 +146,6 @@ export default function DailyBarakahApp() {
     if (!found) { setNextPrayerName("Fajr"); setNextPrayerTime(timings["Fajr"]); }
   };
 
-  // --- ACTIONS ---
   const openSurah = async (surah) => {
     setActiveSurah(surah);
     setCurrentView('quran-reader');
@@ -208,7 +207,7 @@ export default function DailyBarakahApp() {
     }
   };
 
-  // --- COMPONENTS ---
+  // --- SUB-COMPONENTS (RESTORED BEAUTY) ---
   const MobileCardContent = () => (
     <>
       <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-6 border-b border-gray-100 pb-4">
@@ -262,7 +261,7 @@ export default function DailyBarakahApp() {
       {/* SHAMZAN OVERLAY */}
       {showShamzan && <Shamzan onIdentify={handleShamzanIdentify} onClose={() => setShowShamzan(false)} />}
 
-      {/* DAILY POPUP (Fixed Z-Index) */}
+      {/* DAILY POPUP (Beautifully Centered) */}
       {showWelcome && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
            <div className="w-full max-w-sm">
@@ -292,12 +291,16 @@ export default function DailyBarakahApp() {
                             ))}
                         </div>
                     </div>
+                    <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Font Size</p>
+                        <input type="range" min="20" max="60" value={arabicFontSize} onChange={(e) => setArabicFontSize(Number(e.target.value))} className="w-full accent-[#1B4332]" />
+                    </div>
                 </div>
             </div>
         </div>
       )}
 
-      {/* HIDDEN STUDIO FOR IMAGE GENERATION */}
+      {/* HIDDEN STUDIO FOR IMAGE GENERATION (Crucial: Inline Styles to Hide properly) */}
       <div style={{ position: 'fixed', top: '-10000px', left: '-10000px', opacity: 0, zIndex: -1 }}>
         <div ref={hiddenDownloadRef} style={{ width: '1080px', height: '1350px', background: 'linear-gradient(135deg, #FDFCF8 0%, #E8F5E9 100%)', padding: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}><div className="bg-white rounded-[60px] p-[80px] text-center shadow-2xl w-full h-full border-8 border-[#1B4332]/10 flex flex-col box-border"><HighResCardContent /></div></div>
       </div>
@@ -334,7 +337,7 @@ export default function DailyBarakahApp() {
           </div>
 
           {lastRead && (
-             <div onClick={() => { const surah = surahList.find(s => s.id === lastRead.surahId); if(surah) openSurah(surah); }} className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100 flex items-center justify-between cursor-pointer">
+             <div onClick={() => { const surah = surahList.find(s => s.id === lastRead.surahId); if(surah) openSurah(surah); }} className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50">
                  <div className="flex items-center gap-3">
                      <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center"><Book size={20} /></div>
                      <div><p className="text-xs text-gray-400 font-bold uppercase">Continue</p><p className="font-bold text-gray-800">{lastRead.surahName}</p></div>
@@ -362,7 +365,7 @@ export default function DailyBarakahApp() {
             </div>
             <div className="space-y-2">
             {surahList.filter(s => s.name_simple.toLowerCase().includes(searchQuery)).map(surah => (
-                <div key={surah.id} onClick={() => openSurah(surah)} className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 cursor-pointer">
+                <div key={surah.id} onClick={() => openSurah(surah)} className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 cursor-pointer hover:border-green-200">
                 <div className="flex items-center gap-4"><div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center font-bold text-[#1B4332] text-sm">{surah.id}</div><h3 className="font-bold text-gray-900">{surah.name_simple}</h3></div>
                 <span className="font-serif text-xl text-gray-400">{surah.name_arabic}</span>
                 </div>
@@ -377,7 +380,7 @@ export default function DailyBarakahApp() {
             <div className="sticky top-0 bg-[#1B4332] text-white p-4 flex items-center justify-between z-20 shadow-md">
                 <button onClick={() => setCurrentView('quran-list')} className="p-2 hover:bg-white/10 rounded-full"><ChevronLeft /></button>
                 <div className="text-center"><h2 className="font-bold text-lg">{activeSurah?.name_simple}</h2></div>
-                <button onClick={() => setIsMushafMode(!isMushafMode)} className="text-xs bg-white/20 px-3 py-1 rounded-full">{isMushafMode ? "Verse" : "Mushaf"}</button>
+                <button onClick={() => setIsMushafMode(!isMushafMode)} className="text-xs bg-white/20 px-3 py-1 rounded-full border border-white/20">{isMushafMode ? "Verse" : "Mushaf"}</button>
             </div>
             <div className="p-6">
                 {loading ? <div className="text-center py-20 text-gray-400">Loading Surah...</div> : (
