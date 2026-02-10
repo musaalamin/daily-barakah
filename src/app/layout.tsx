@@ -1,4 +1,5 @@
-import './globals.css';
+// src/app/layout.tsx
+import './globals.css'; // <--- THIS LINE IS CRITICAL
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
