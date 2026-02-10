@@ -9,14 +9,11 @@ import {
 } from 'lucide-react';
 
 // --- IMPORTS FROM YOUR NEW FILES ---
-// Ensure these paths match where you saved the files. 
-// If your folders are src/data and src/components, these relative paths work for src/app/page.tsx
 import { RECITERS, DUA_CATEGORIES, DAILY_INSPIRATIONS } from '../data/quranData';
 import Shamzan from '../components/Shamzan';
 import { useGaplessAudio, GlobalPlayerBar } from '../components/AudioPlayer';
 
 export default function DailyBarakahApp() {
-  // --- STATE MANAGEMENT ---
   const [currentView, setCurrentView] = useState('home'); 
   const [activeCategory, setActiveCategory] = useState('morning_evening'); 
   const [showShamzan, setShowShamzan] = useState(false);
@@ -42,7 +39,7 @@ export default function DailyBarakahApp() {
   const [dailyQuote, setDailyQuote] = useState(DAILY_INSPIRATIONS[0]);
 
   // Audio State (Managed by useGaplessAudio hook)
-  const [activeReciter, setActiveReciter] = useState(RECITERS[0]); // Default to Hudaify or first in list
+  const [activeReciter, setActiveReciter] = useState(RECITERS[0]); 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1);
@@ -56,22 +53,18 @@ export default function DailyBarakahApp() {
   const [planner, setPlanner] = useState({ fasting: false, quran: false, taraweeh: false, dhikr: false, charity: false });
 
   // --- AUDIO HOOK INTEGRATION ---
-  // This hook handles the gapless playback and preloading logic
   const { playAyah, pause, resume, setSpeed } = useGaplessAudio(
     activeReciter, 
     ayahs, 
     playbackRate,
     (index: number) => {
-        // This callback runs when the audio moves to the next ayah automatically
         setCurrentIndex(index);
-        // Auto-scroll logic
         if(currentView === 'quran-reader') {
              document.getElementById(`ayah-${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
   );
 
-  // Helper to start playing a specific Ayah
   const handlePlaySurah = (startIndex = 0) => {
       if(!activeSurah) return;
       setIsPlaying(true);
@@ -79,13 +72,11 @@ export default function DailyBarakahApp() {
       setCurrentIndex(startIndex);
   };
 
-  // Global Play/Pause Toggle
   const togglePlayPause = () => {
       if(isPlaying) {
           pause();
           setIsPlaying(false);
       } else {
-          // If stopped but we have a current index, resume there. Otherwise start from 0.
           if (currentIndex !== null && ayahs.length > 0) {
               resume();
           } else if (activeSurah) {
@@ -97,18 +88,14 @@ export default function DailyBarakahApp() {
 
   // --- INITIALIZATION ---
   useEffect(() => {
-    // 1. Set Daily Quote
-    const dayIndex = new Date().getDate() % DAILY_INSPIRATIONS.length;
-    setDailyQuote(DAILY_INSPIRATIONS[dayIndex]);
+    setDailyQuote(DAILY_INSPIRATIONS[new Date().getDate() % DAILY_INSPIRATIONS.length]);
     setGregorianDate(new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
     
-    // 2. Load LocalStorage Data
     const savedLastRead = localStorage.getItem('barakah_last_read');
     if (savedLastRead) setLastRead(JSON.parse(savedLastRead));
     const savedBookmarks = localStorage.getItem('barakah_bookmarks');
     if (savedBookmarks) setBookmarks(JSON.parse(savedBookmarks));
 
-    // 3. Ramadan Countdown Logic
     const today = new Date();
     const ramadanStart = new Date('2026-02-18'); 
     const diffTime = ramadanStart.getTime() - today.getTime();
@@ -117,12 +104,10 @@ export default function DailyBarakahApp() {
     else if (diffDays <= 0 && diffDays > -30) setRamadanStatus(`Ramadan Day ${Math.abs(diffDays) + 1}`);
     else setRamadanStatus("Daily Barakah");
 
-    // 4. Fetch Surah List
     fetch('https://api.quran.com/api/v4/chapters?language=en')
       .then(res => res.json())
       .then(data => setSurahList(data.chapters || []));
 
-    // 5. Prayer Times (Geolocation)
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         try {
@@ -151,26 +136,20 @@ export default function DailyBarakahApp() {
     if (!found) { setNextPrayerName("Fajr"); setNextPrayerTime(timings["Fajr"]); }
   };
 
-  // --- NAVIGATION & LOGIC ---
   const openSurah = async (surah: any) => {
     setActiveSurah(surah);
     setCurrentView('quran-reader');
     setLoading(true);
     try {
-      // Fetch Ayahs
       const quranRes = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surah.id}?language=en&words=true&translations=20&per_page=300&fields=text_uthmani`);
       const quranData = await quranRes.json();
-      // Fetch Hausa Translation
       const hausaRes = await fetch(`https://quranenc.com/api/v1/translation/sura/hausa_gummi/${surah.id}`);
       const hausaData = await hausaRes.json();
-      
       setAyahs(quranData.verses.map((verse: any, index: number) => ({
         id: verse.id, number: verse.verse_number, arabic: verse.text_uthmani,
         english: verse.translations[0]?.text.replace(/<[^>]*>?/gm, '') || "...",
         hausa: hausaData.result[index]?.translation || "..."
       })));
-      
-      // Save Status
       const data = { surahName: surah.name_simple, surahId: surah.id, ayah: 1, timestamp: Date.now() };
       setLastRead(data);
       localStorage.setItem('barakah_last_read', JSON.stringify(data));
@@ -183,14 +162,11 @@ export default function DailyBarakahApp() {
       const surah = surahList.find(s => s.id === surahId);
       if(surah) {
           await openSurah(surah);
-          // Wait for render then scroll
           setTimeout(() => {
               const targetIndex = ayahNum - 1;
               const el = document.getElementById(`ayah-${targetIndex}`);
               if(el) el.scrollIntoView({behavior: 'smooth', block: 'center'});
               setRevealedAyah(targetIndex);
-              // Optional: Auto-play found ayah
-              // playAyah(surahId, targetIndex); 
           }, 1500);
       }
   };
@@ -205,27 +181,10 @@ export default function DailyBarakahApp() {
     localStorage.setItem('barakah_bookmarks', JSON.stringify(newBookmarks));
   };
 
-  // --- RENDER ---
   return (
     <div className="min-h-screen bg-[#FDFCF8] font-sans text-gray-900 max-w-md mx-auto shadow-2xl overflow-hidden relative">
-      
-      {/* 1. GLOBAL AUDIO PLAYER BAR */}
-      <GlobalPlayerBar 
-         isPlaying={isPlaying} 
-         reciterName={activeReciter.name.split(' ')[0]} 
-         onClick={() => setCurrentView('quran-reader')}
-         onTogglePlay={togglePlayPause}
-      />
-
-      {/* 2. SHAMZAN OVERLAY */}
-      {showShamzan && (
-         <Shamzan 
-            onIdentify={handleShamzanIdentify} 
-            onClose={() => setShowShamzan(false)} 
-         />
-      )}
-
-      {/* 3. SETTINGS MODAL */}
+      <GlobalPlayerBar isPlaying={isPlaying} reciterName={activeReciter.name.split(' ')[0]} onClick={() => setCurrentView('quran-reader')} onTogglePlay={togglePlayPause} />
+      {showShamzan && (<Shamzan onIdentify={handleShamzanIdentify} onClose={() => setShowShamzan(false)} />)}
       {showSettingsModal && (
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in">
             <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-10 shadow-2xl h-[70vh] overflow-y-auto">
@@ -237,9 +196,7 @@ export default function DailyBarakahApp() {
                     <div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Reciter</p>
                         <div className="grid grid-cols-2 gap-2">
-                            {RECITERS.map(r => (
-                                <button key={r.id} onClick={() => setActiveReciter(r)} className={`text-left px-3 py-2 text-xs rounded-lg border font-medium ${activeReciter.id === r.id ? 'bg-[#1B4332] text-white' : 'bg-white text-gray-600'}`}>{r.name}</button>
-                            ))}
+                            {RECITERS.map(r => (<button key={r.id} onClick={() => setActiveReciter(r)} className={`text-left px-3 py-2 text-xs rounded-lg border font-medium ${activeReciter.id === r.id ? 'bg-[#1B4332] text-white' : 'bg-white text-gray-600'}`}>{r.name}</button>))}
                         </div>
                     </div>
                     <div>
@@ -250,15 +207,12 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
-
-      {/* 4. VIEW: HOME SCREEN */}
       {currentView === 'home' && (
         <div className="space-y-6 pb-24 p-6">
           <header className="flex justify-between items-center">
             <div><h1 className="text-2xl font-bold text-[#1B4332] font-serif">Daily Barakah</h1><p className="text-xs text-gray-500">{hijriDate} • Gusau</p></div>
             <button onClick={() => setShowSettingsModal(true)} className="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-600 shadow-sm"><Settings size={20} /></button>
           </header>
-          
           <div className="bg-[#1B4332] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
              <div className="absolute top-0 right-0 opacity-10"><Moon size={120} /></div>
              <div className="relative z-10">
@@ -266,27 +220,20 @@ export default function DailyBarakahApp() {
                     <div><p className="text-[#95D5B2] text-xs font-bold uppercase mb-1">Next Prayer</p><h2 className="text-4xl font-bold">{nextPrayerName} <span className="text-xl font-normal text-white/70">{nextPrayerTime}</span></h2></div>
                     <div className="bg-white/10 p-2 rounded-lg text-center"><p className="text-xs text-[#95D5B2] uppercase font-bold">Status</p><p className="text-lg font-bold leading-tight">{ramadanStatus}</p></div>
                 </div>
-                {/* Prayer Times Row */}
                 <div className="flex justify-between text-center border-t border-white/20 pt-4">
                   {['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map(p => (<div key={p} className="flex flex-col"><span className="text-[10px] text-[#95D5B2] uppercase">{p}</span><span className="font-bold text-sm">{prayerTimes ? prayerTimes[p] : "--:--"}</span></div>))}
                 </div>
              </div>
           </div>
-
-          {/* MAIN SHAMZAN BUTTON */}
           <button onClick={() => setShowShamzan(true)} className="w-full bg-gradient-to-r from-green-600 to-[#1B4332] text-white p-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform group">
              <div className="bg-white/20 p-2 rounded-full group-hover:animate-pulse"><Radio size={24} /></div>
              <div className="text-left"><p className="font-bold text-lg">Shamzan</p><p className="text-xs text-green-100">Identify Reciter & Surah</p></div>
           </button>
-
-          {/* DAILY QUOTE CARD */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
               <Sparkles size={16} className="mx-auto text-green-600 mb-2"/>
               <p className="font-serif text-xl text-[#1B4332] mb-2 dir-rtl">{dailyQuote.arabic}</p>
               <p className="text-xs text-gray-500 italic">"{dailyQuote.english}"</p>
           </div>
-
-          {/* CONTINUE READING */}
           {lastRead && (
              <div onClick={() => { const surah = surahList.find(s => s.id === lastRead.surahId); if(surah) openSurah(surah); }} className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50">
                  <div className="flex items-center gap-3">
@@ -296,15 +243,12 @@ export default function DailyBarakahApp() {
                  <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">Ayah {lastRead.ayah}</div>
              </div>
           )}
-
           <div className="grid grid-cols-2 gap-4">
             <button onClick={() => setCurrentView('quran-list')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2"><BookOpen size={24} /><span className="font-bold text-gray-800">Quran</span></button>
             <button onClick={() => setCurrentView('duas')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2"><Heart size={24} /><span className="font-bold text-gray-800">Duas</span></button>
           </div>
         </div>
       )}
-
-      {/* 5. VIEW: QURAN LIST */}
       {currentView === 'quran-list' && (
         <div className="pb-24 pt-6 px-4">
             <div className="sticky top-0 bg-[#FDFCF8] z-10 pb-4">
@@ -324,8 +268,6 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
-
-      {/* 6. VIEW: BOOKMARKS */}
       {currentView === 'bookmarks' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-6">Saved Ayahs</h2>
@@ -344,8 +286,6 @@ export default function DailyBarakahApp() {
             )}
         </div>
       )}
-
-      {/* 7. VIEW: QURAN READER */}
       {currentView === 'quran-reader' && (
         <div className="pb-32 bg-[#FAF9F6]">
             <div className="sticky top-0 bg-[#1B4332] text-white p-4 flex items-center justify-between z-20 shadow-md">
@@ -353,11 +293,9 @@ export default function DailyBarakahApp() {
                 <div className="text-center"><h2 className="font-bold text-lg">{activeSurah?.name_simple}</h2></div>
                 <button onClick={() => setIsMushafMode(!isMushafMode)} className="text-xs bg-white/20 px-3 py-1 rounded-full border border-white/20">{isMushafMode ? "Verse" : "Mushaf"}</button>
             </div>
-            
             <div className="p-6">
                 {loading ? <div className="text-center py-20 text-gray-400">Loading Surah...</div> : (
                    isMushafMode ? (
-                      // MUSHAF FULL PAGE MODE
                       <div className="bg-white p-6 rounded-lg shadow border border-gray-200 text-justify leading-[2.8] dir-rtl font-serif text-gray-900" style={{fontSize: arabicFontSize + 'px'}}>
                          {activeSurah.id !== 1 && activeSurah.id !== 9 && <div className="w-full text-center mb-6 text-[#1B4332]">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>}
                          {ayahs.map((ayah, i) => (
@@ -367,7 +305,6 @@ export default function DailyBarakahApp() {
                          ))}
                       </div>
                    ) : (
-                      // VERSE LIST MODE
                       <div className="space-y-6">
                           {activeSurah.id !== 1 && activeSurah.id !== 9 && <div className="text-center py-4"><p className="font-serif text-3xl text-[#1B4332]">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</p></div>}
                           {ayahs.map((ayah, i) => (
@@ -377,7 +314,6 @@ export default function DailyBarakahApp() {
                                       <button onClick={(e) => { e.stopPropagation(); toggleBookmark(activeSurah, ayah); }}><Bookmark size={16} className={bookmarks.some(b => b.id === `${activeSurah.id}:${ayah.number}`) ? "fill-green-700 text-green-700" : "text-gray-300"} /></button>
                                   </div>
                                   <p className="font-serif text-2xl mb-4 leading-loose dir-rtl text-gray-900" style={{fontSize: arabicFontSize + 'px'}}>{ayah.arabic}</p>
-                                  {/* Show English/Hausa if clicked or active */}
                                   {(revealedAyah === i || currentIndex === i) && (
                                       <div className="animate-in fade-in slide-in-from-top-2">
                                         <p className="text-sm text-gray-700 mb-2">{ayah.english}</p>
@@ -390,8 +326,6 @@ export default function DailyBarakahApp() {
                    )
                 )}
             </div>
-            
-            {/* Player Controls (Bottom of Reader) */}
             <div className="fixed bottom-0 w-full max-w-md bg-white border-t p-4 z-50 flex items-center justify-between pb-8">
                 <span className="text-xs font-bold text-gray-500">{activeReciter.name.split(' ')[0]}</span>
                 <button onClick={togglePlayPause} className="w-12 h-12 bg-[#1B4332] rounded-full text-white flex items-center justify-center shadow-lg active:scale-95">{isPlaying ? <Pause /> : <Play />}</button>
@@ -399,8 +333,6 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
-
-      {/* 8. VIEW: DUAS */}
       {currentView === 'duas' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-4">Fortress of the Muslim</h2>
@@ -422,8 +354,6 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
-      
-      {/* 9. VIEW: TASBIH */}
       {currentView === 'tasbih' && (
         <div className="pb-24 pt-10 px-6 min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6]">
             <h2 className="text-3xl font-bold text-[#1B4332] mb-2 font-serif">Digital Tasbih</h2>
@@ -431,8 +361,6 @@ export default function DailyBarakahApp() {
             <button onClick={() => setTasbihCount(0)} className="flex items-center gap-2 text-gray-400"><RefreshCw size={20} /> Reset</button>
         </div>
       )}
-
-      {/* 10. BOTTOM NAVIGATION */}
       {currentView !== 'quran-reader' && (
         <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 py-3 px-4 flex justify-between items-center z-50">
           <button onClick={() => setCurrentView('home')} className={`flex flex-col items-center gap-1 ${currentView === 'home' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Menu size={20} /><span className="text-[10px] font-bold">Home</span></button>
