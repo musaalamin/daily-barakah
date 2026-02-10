@@ -14,6 +14,7 @@ import Shamzan from '../components/Shamzan';
 import { useGaplessAudio, GlobalPlayerBar } from '../components/AudioPlayer';
 
 export default function DailyBarakahApp() {
+  // --- STATE MANAGEMENT ---
   const [currentView, setCurrentView] = useState('home'); 
   const [activeCategory, setActiveCategory] = useState('morning_evening'); 
   const [showShamzan, setShowShamzan] = useState(false);
@@ -88,7 +89,8 @@ export default function DailyBarakahApp() {
 
   // --- INITIALIZATION ---
   useEffect(() => {
-    setDailyQuote(DAILY_INSPIRATIONS[new Date().getDate() % DAILY_INSPIRATIONS.length]);
+    const dayIndex = new Date().getDate() % DAILY_INSPIRATIONS.length;
+    setDailyQuote(DAILY_INSPIRATIONS[dayIndex]);
     setGregorianDate(new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
     
     const savedLastRead = localStorage.getItem('barakah_last_read');
@@ -136,6 +138,7 @@ export default function DailyBarakahApp() {
     if (!found) { setNextPrayerName("Fajr"); setNextPrayerTime(timings["Fajr"]); }
   };
 
+  // --- NAVIGATION & LOGIC ---
   const openSurah = async (surah: any) => {
     setActiveSurah(surah);
     setCurrentView('quran-reader');
@@ -145,11 +148,13 @@ export default function DailyBarakahApp() {
       const quranData = await quranRes.json();
       const hausaRes = await fetch(`https://quranenc.com/api/v1/translation/sura/hausa_gummi/${surah.id}`);
       const hausaData = await hausaRes.json();
+      
       setAyahs(quranData.verses.map((verse: any, index: number) => ({
         id: verse.id, number: verse.verse_number, arabic: verse.text_uthmani,
         english: verse.translations[0]?.text.replace(/<[^>]*>?/gm, '') || "...",
         hausa: hausaData.result[index]?.translation || "..."
       })));
+      
       const data = { surahName: surah.name_simple, surahId: surah.id, ayah: 1, timestamp: Date.now() };
       setLastRead(data);
       localStorage.setItem('barakah_last_read', JSON.stringify(data));
@@ -181,10 +186,24 @@ export default function DailyBarakahApp() {
     localStorage.setItem('barakah_bookmarks', JSON.stringify(newBookmarks));
   };
 
+  // --- RENDER ---
   return (
     <div className="min-h-screen bg-[#FDFCF8] font-sans text-gray-900 max-w-md mx-auto shadow-2xl overflow-hidden relative">
-      <GlobalPlayerBar isPlaying={isPlaying} reciterName={activeReciter.name.split(' ')[0]} onClick={() => setCurrentView('quran-reader')} onTogglePlay={togglePlayPause} />
-      {showShamzan && (<Shamzan onIdentify={handleShamzanIdentify} onClose={() => setShowShamzan(false)} />)}
+      
+      <GlobalPlayerBar 
+         isPlaying={isPlaying} 
+         reciterName={activeReciter.name.split(' ')[0]} 
+         onClick={() => setCurrentView('quran-reader')}
+         onTogglePlay={togglePlayPause}
+      />
+
+      {showShamzan && (
+         <Shamzan 
+            onIdentify={handleShamzanIdentify} 
+            onClose={() => setShowShamzan(false)} 
+         />
+      )}
+
       {showSettingsModal && (
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in">
             <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 pb-10 shadow-2xl h-[70vh] overflow-y-auto">
@@ -196,7 +215,9 @@ export default function DailyBarakahApp() {
                     <div>
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Reciter</p>
                         <div className="grid grid-cols-2 gap-2">
-                            {RECITERS.map(r => (<button key={r.id} onClick={() => setActiveReciter(r)} className={`text-left px-3 py-2 text-xs rounded-lg border font-medium ${activeReciter.id === r.id ? 'bg-[#1B4332] text-white' : 'bg-white text-gray-600'}`}>{r.name}</button>))}
+                            {RECITERS.map(r => (
+                                <button key={r.id} onClick={() => setActiveReciter(r)} className={`text-left px-3 py-2 text-xs rounded-lg border font-medium ${activeReciter.id === r.id ? 'bg-[#1B4332] text-white' : 'bg-white text-gray-600'}`}>{r.name}</button>
+                            ))}
                         </div>
                     </div>
                     <div>
@@ -207,12 +228,14 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
+
       {currentView === 'home' && (
         <div className="space-y-6 pb-24 p-6">
           <header className="flex justify-between items-center">
             <div><h1 className="text-2xl font-bold text-[#1B4332] font-serif">Daily Barakah</h1><p className="text-xs text-gray-500">{hijriDate} • Gusau</p></div>
             <button onClick={() => setShowSettingsModal(true)} className="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-600 shadow-sm"><Settings size={20} /></button>
           </header>
+          
           <div className="bg-[#1B4332] rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
              <div className="absolute top-0 right-0 opacity-10"><Moon size={120} /></div>
              <div className="relative z-10">
@@ -225,15 +248,18 @@ export default function DailyBarakahApp() {
                 </div>
              </div>
           </div>
+
           <button onClick={() => setShowShamzan(true)} className="w-full bg-gradient-to-r from-green-600 to-[#1B4332] text-white p-4 rounded-2xl shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform group">
              <div className="bg-white/20 p-2 rounded-full group-hover:animate-pulse"><Radio size={24} /></div>
              <div className="text-left"><p className="font-bold text-lg">Shamzan</p><p className="text-xs text-green-100">Identify Reciter & Surah</p></div>
           </button>
+
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center">
               <Sparkles size={16} className="mx-auto text-green-600 mb-2"/>
               <p className="font-serif text-xl text-[#1B4332] mb-2 dir-rtl">{dailyQuote.arabic}</p>
               <p className="text-xs text-gray-500 italic">"{dailyQuote.english}"</p>
           </div>
+
           {lastRead && (
              <div onClick={() => { const surah = surahList.find(s => s.id === lastRead.surahId); if(surah) openSurah(surah); }} className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50">
                  <div className="flex items-center gap-3">
@@ -243,12 +269,14 @@ export default function DailyBarakahApp() {
                  <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">Ayah {lastRead.ayah}</div>
              </div>
           )}
+
           <div className="grid grid-cols-2 gap-4">
             <button onClick={() => setCurrentView('quran-list')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2"><BookOpen size={24} /><span className="font-bold text-gray-800">Quran</span></button>
             <button onClick={() => setCurrentView('duas')} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2"><Heart size={24} /><span className="font-bold text-gray-800">Duas</span></button>
           </div>
         </div>
       )}
+
       {currentView === 'quran-list' && (
         <div className="pb-24 pt-6 px-4">
             <div className="sticky top-0 bg-[#FDFCF8] z-10 pb-4">
@@ -268,6 +296,7 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
+
       {currentView === 'bookmarks' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-6">Saved Ayahs</h2>
@@ -286,6 +315,7 @@ export default function DailyBarakahApp() {
             )}
         </div>
       )}
+
       {currentView === 'quran-reader' && (
         <div className="pb-32 bg-[#FAF9F6]">
             <div className="sticky top-0 bg-[#1B4332] text-white p-4 flex items-center justify-between z-20 shadow-md">
@@ -293,6 +323,7 @@ export default function DailyBarakahApp() {
                 <div className="text-center"><h2 className="font-bold text-lg">{activeSurah?.name_simple}</h2></div>
                 <button onClick={() => setIsMushafMode(!isMushafMode)} className="text-xs bg-white/20 px-3 py-1 rounded-full border border-white/20">{isMushafMode ? "Verse" : "Mushaf"}</button>
             </div>
+            
             <div className="p-6">
                 {loading ? <div className="text-center py-20 text-gray-400">Loading Surah...</div> : (
                    isMushafMode ? (
@@ -326,6 +357,7 @@ export default function DailyBarakahApp() {
                    )
                 )}
             </div>
+            
             <div className="fixed bottom-0 w-full max-w-md bg-white border-t p-4 z-50 flex items-center justify-between pb-8">
                 <span className="text-xs font-bold text-gray-500">{activeReciter.name.split(' ')[0]}</span>
                 <button onClick={togglePlayPause} className="w-12 h-12 bg-[#1B4332] rounded-full text-white flex items-center justify-center shadow-lg active:scale-95">{isPlaying ? <Pause /> : <Play />}</button>
@@ -333,6 +365,7 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
+
       {currentView === 'duas' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-4">Fortress of the Muslim</h2>
@@ -354,6 +387,7 @@ export default function DailyBarakahApp() {
             </div>
         </div>
       )}
+      
       {currentView === 'tasbih' && (
         <div className="pb-24 pt-10 px-6 min-h-screen flex flex-col items-center justify-center bg-[#FAF9F6]">
             <h2 className="text-3xl font-bold text-[#1B4332] mb-2 font-serif">Digital Tasbih</h2>
@@ -361,6 +395,7 @@ export default function DailyBarakahApp() {
             <button onClick={() => setTasbihCount(0)} className="flex items-center gap-2 text-gray-400"><RefreshCw size={20} /> Reset</button>
         </div>
       )}
+
       {currentView !== 'quran-reader' && (
         <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-200 py-3 px-4 flex justify-between items-center z-50">
           <button onClick={() => setCurrentView('home')} className={`flex flex-col items-center gap-1 ${currentView === 'home' ? 'text-[#1B4332]' : 'text-gray-400'}`}><Menu size={20} /><span className="text-[10px] font-bold">Home</span></button>
