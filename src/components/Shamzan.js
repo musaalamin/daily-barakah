@@ -1,119 +1,102 @@
-// src/components/Shamzan.js
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Radio, X, Mic } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Mic, X, Activity } from 'lucide-react';
 
-export default function Shamzan({ onIdentify, onClose }) {
-  const [status, setStatus] = useState('listening'); // listening, analyzing, error, success
-  const [message, setMessage] = useState('Listening for recitation...');
+export default function Shamzan({ onIdentify, onClose, surahList }) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("Tap Mic & Say 'Surah Name'...");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    let recognition = null;
-    let timeout = null;
-
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      // @ts-ignore
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'ar-SA'; // Critical: Listen for Arabic
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setStatus('listening');
-        setMessage('Listening to Quran...');
-      };
-
-      recognition.onresult = async (event) => {
-        const transcript = event.results[0][0].transcript;
-        setStatus('analyzing');
-        setMessage('Identifying Ayah...');
-        
-        try {
-          // Search Quran.com API
-          const response = await fetch(`https://api.quran.com/api/v4/search?q=${encodeURIComponent(transcript)}&language=ar`);
-          const data = await response.json();
-
-          if (data.search && data.search.results && data.search.results.length > 0) {
-            // Take the first best match
-            const bestMatch = data.search.results[0];
-            const [surahId, ayahNum] = bestMatch.verse_key.split(':');
-            
-            setStatus('success');
-            setMessage(`Found: Surah ${surahId}, Ayah ${ayahNum}`);
-            
-            // Wait a moment then navigate
-            setTimeout(() => {
-              onIdentify(parseInt(surahId), parseInt(ayahNum));
-            }, 1000);
-
-          } else {
-            setStatus('error');
-            setMessage('Could not identify the Ayah. Try getting closer.');
-          }
-        } catch (e) {
-          setStatus('error');
-          setMessage('Connection failed. Please check internet.');
-        }
-      };
-
-      recognition.onerror = () => {
-        setStatus('error');
-        setMessage('Audio not clear. Please try again.');
-      };
-
-      recognition.onend = () => {
-        // If simply ended without result (silence)
-        if (status === 'listening') {
-           // Optional: Auto restart or stop
-        }
-      };
-
-      recognition.start();
-
-      // Auto-stop after 15 seconds to save battery/resources
-      timeout = setTimeout(() => {
-        if (status === 'listening') {
-            recognition.stop();
-            setStatus('error');
-            setMessage('Timed out. No recitation detected.');
-        }
-      }, 15000);
-
-    } else {
-      setStatus('error');
-      setMessage('Your browser does not support Voice Recognition.');
+    // Check browser support
+    if (!('webkitSpeechRecognition' in window)) {
+      setError("Voice search is not supported in this browser.");
     }
-
-    return () => {
-      if (recognition) recognition.abort();
-      if (timeout) clearTimeout(timeout);
-    };
   }, []);
 
+  const startListening = () => {
+    setError(null);
+    setIsListening(true);
+    setTranscript("Listening...");
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript.toLowerCase();
+      setTranscript(`You said: "${text}"`);
+      findSurah(text);
+    };
+
+    recognition.onerror = (event) => {
+      setError("Didn't catch that. Try again.");
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  const findSurah = (text) => {
+    // 1. Remove common words like "open", "play", "surah"
+    const cleanText = text.replace(/open|play|surah|chapter|read/g, '').trim();
+
+    // 2. Fuzzy Search in Surah List
+    // We look for the name in English or simple name
+    const found = surahList.find(s => 
+      s.name_simple.toLowerCase().includes(cleanText) || 
+      s.name_arabic.includes(cleanText) ||
+      parseInt(cleanText) === s.id
+    );
+
+    if (found) {
+      setTranscript(`Opening ${found.name_simple}...`);
+      setTimeout(() => {
+        onIdentify(found.id); // Pass ID back to parent
+      }, 1000);
+    } else {
+      setError(`Could not find Surah "${cleanText}"`);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-center bg-black/90 backdrop-blur-md p-6 text-white text-center animate-in fade-in duration-300">
-      <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/10 rounded-full hover:bg-white/20"><X size={24} /></button>
-      
-      {/* Visual Pulse Animation */}
-      <div className="relative mb-8">
-        {status === 'listening' && (
-           <>
-             <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20 delay-75"></div>
-             <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20 delay-150"></div>
-           </>
-        )}
-        <div className={`w-32 h-32 rounded-full border-4 flex items-center justify-center transition-all duration-500 ${status === 'error' ? 'border-red-500 bg-red-500/10' : 'border-green-500 bg-green-500/10'}`}>
-           <Radio size={48} className={status === 'listening' ? 'animate-pulse' : ''} />
+    <div className="fixed inset-0 z-[100] grid place-items-center bg-black/80 backdrop-blur-sm p-6 animate-in fade-in">
+      <div className="w-full max-w-sm bg-white rounded-3xl p-8 text-center relative shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-300 hover:text-red-500"><X size={24}/></button>
+        
+        <h2 className="text-2xl font-bold text-[#1B4332] mb-2">Voice Search</h2>
+        <p className="text-gray-500 text-sm mb-8">Say "Surah Mulk" or "Open Yasin"</p>
+
+        {/* Mic Animation Container */}
+        <div className="relative mx-auto w-24 h-24 mb-8 flex items-center justify-center">
+           {isListening && (
+             <>
+               <div className="absolute inset-0 bg-green-500 rounded-full opacity-20 animate-ping"></div>
+               <div className="absolute inset-0 bg-green-500 rounded-full opacity-10 animate-pulse delay-75"></div>
+             </>
+           )}
+           <button 
+             onClick={startListening}
+             className={`relative z-10 w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all ${isListening ? 'bg-red-500 text-white scale-110' : 'bg-[#1B4332] text-white hover:scale-105'}`}
+           >
+             {isListening ? <Activity size={32} className="animate-pulse"/> : <Mic size={32} />}
+           </button>
+        </div>
+
+        <div className="min-h-[3rem]">
+            {error ? (
+               <p className="text-red-500 font-bold animate-pulse">{error}</p>
+            ) : (
+               <p className="text-[#1B4332] font-medium text-lg">{transcript}</p>
+            )}
         </div>
       </div>
-
-      <h3 className="text-2xl font-bold mb-2 font-serif">Shamzan</h3>
-      <p className={`text-lg mb-8 ${status === 'error' ? 'text-red-300' : 'text-green-100'}`}>{message}</p>
-      
-      {status === 'error' && (
-        <button onClick={onClose} className="bg-white text-black px-8 py-3 rounded-full font-bold">Close</button>
-      )}
     </div>
   );
 }
