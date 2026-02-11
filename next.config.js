@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // THIS IS THE LINE YOU NEED TO ADD:
+  basePath: '/daily-barakah',
+  
   typescript: {
-    // Keep this to ignore strict type errors during build
     ignoreBuildErrors: true,
   },
-  // We removed the 'eslint' block because Next.js 16 handles it differently now
 }
 
 module.exports = nextConfig
