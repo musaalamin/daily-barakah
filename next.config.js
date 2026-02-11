@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // THIS IS THE LINE YOU NEED TO ADD:
   basePath: '/daily-barakah',
-  
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-}
+  assetPrefix: '/daily-barakah', // This ensures images and CSS load correctly
+  // ... keep any other settings you already had
+};
 
-module.exports = nextConfig
+export default nextConfig;
