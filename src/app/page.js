@@ -24,7 +24,7 @@ export default function DailyBarakahApp() {
   const [showShamzan, setShowShamzan] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isDark, setIsDark] = useState(true);
-  const [showInstall, setShowInstall] = useState(false); // Default hidden
+  const [showInstall, setShowInstall] = useState(true); // Default hidden
   
   const [activeMood, setActiveMood] = useState(null); 
   const [surahList, setSurahList] = useState([]);

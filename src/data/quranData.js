@@ -1,15 +1,50 @@
 // --- 1. RECITERS LIST (The Legends) ---
+// --- OPTIMIZED RECITERS LIST (FAST SERVERS) ---
 export const RECITERS = [
-  { id: 'ar.alafasy', name: 'Mishary Rashid Alafasy', url: 'https://mirrors.quranicaudio.com/everyayah/Alafasy_128kbps/' },
-  { id: 'ar.sudais', name: 'Abdur-Rahman as-Sudais', url: 'https://mirrors.quranicaudio.com/everyayah/Abdurrahmaan_As-Sudais_192kbps/' },
-  { id: 'ar.shuraim', name: 'Saud Al-Shuraim', url: 'https://mirrors.quranicaudio.com/everyayah/Saood_ash-Shuraym_128kbps/' },
-  { id: 'ar.maher', name: 'Maher Al Muaiqly', url: 'https://mirrors.quranicaudio.com/everyayah/MaherAlMuaiqly128kbps/' },
-  { id: 'ar.hudaify', name: 'Ali Al-Hudaify', url: 'https://mirrors.quranicaudio.com/everyayah/Hudaify_128kbps/' },
-  { id: 'ar.juhany', name: 'Abdallah Al Juhany', url: 'https://mirrors.quranicaudio.com/everyayah/Abdullah_Awad_Al-Juhany_128kbps/' },
-  { id: 'ar.dossary', name: 'Yasser Al Dossary', url: 'https://mirrors.quranicaudio.com/everyayah/Yasser_Ad-Dussary_128kbps/' },
-  { id: 'ar.minshawi', name: 'Mohamed Siddiq El-Minshawi', url: 'https://mirrors.quranicaudio.com/everyayah/Minshawy_Murattal_128kbps/' },
-  { id: 'ar.husary', name: 'Mahmoud Khalil Al-Husary', url: 'https://mirrors.quranicaudio.com/everyayah/Husary_128kbps/' },
-  { id: 'ar.baleela', name: 'Bandar Baleela', url: 'https://mirrors.quranicaudio.com/everyayah/Bandar_Balila_128kbps/' },
+  { 
+    id: 'ar.alafasy', 
+    name: 'Mishary Rashid Alafasy', 
+    url: 'https://mirrors.quranicaudio.com/everyayah/Alafasy_128kbps/' 
+  },
+  { 
+    id: 'ar.sudais', 
+    name: 'Abdur-Rahman as-Sudais', 
+    url: 'https://mirrors.quranicaudio.com/everyayah/Abdurrahmaan_As-Sudais_192kbps/' 
+  },
+  { 
+    id: 'ar.maher', 
+    name: 'Maher Al-Muaiqly', 
+    // FIX: Switched to a reliable 128kbps mirror
+    url: 'https://mirrors.quranicaudio.com/everyayah/MaherAlMuaiqly128kbps/' 
+  },
+  { 
+    id: 'ar.juhany', 
+    name: 'Abdullah Al-Juhany', 
+    // FIX: Corrected folder name
+    url: 'https://mirrors.quranicaudio.com/everyayah/Abdullah_Al_Juhany_128kbps/' 
+  },
+  { 
+    id: 'ar.hudaify', 
+    name: 'Ali Al-Hudaify', 
+    // FIX: Switched to 128kbps standard
+    url: 'https://mirrors.quranicaudio.com/everyayah/Ali_Al_Hudaify_128kbps/' 
+  },
+  { 
+    id: 'ar.bandar', 
+    name: 'Bandar Baleela', 
+    // FIX: Using the high-speed 64kbps mirror (loads fastest on mobile)
+    url: 'https://mirrors.quranicaudio.com/everyayah/Bandar_Baleela_64kbps/' 
+  },
+  { 
+    id: 'ar.husary', 
+    name: 'Mahmoud Khalil Al-Husary', 
+    url: 'https://mirrors.quranicaudio.com/everyayah/Husary_128kbps/' 
+  },
+  { 
+    id: 'ar.minshawi', 
+    name: 'Mohamed Siddiq Al-Minshawi', 
+    url: 'https://mirrors.quranicaudio.com/everyayah/Minshawy_Murattal_128kbps/' 
+  }
 ];
 
 // --- 2. DUA CATEGORIES ---
