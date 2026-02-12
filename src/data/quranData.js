@@ -12,27 +12,29 @@ export const RECITERS = [
     url: 'https://mirrors.quranicaudio.com/everyayah/Abdurrahmaan_As-Sudais_192kbps/' 
   },
   { 
+    id: 'ar.dosari', 
+    name: 'Yasser Al-Dosari', 
+    // FIX: Added Yasser Al-Dosari (Note the spelling "Dussary")
+    url: 'https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/' 
+  },
+  { 
     id: 'ar.maher', 
     name: 'Maher Al-Muaiqly', 
-    // FIX: Switched to a reliable 128kbps mirror
-    url: 'https://mirrors.quranicaudio.com/everyayah/MaherAlMuaiqly128kbps/' 
+    url: 'https://everyayah.com/data/MaherAlMuaiqly128kbps/' 
   },
   { 
     id: 'ar.juhany', 
     name: 'Abdullah Al-Juhany', 
-    // FIX: Corrected folder name
-    url: 'https://mirrors.quranicaudio.com/everyayah/Abdullah_Al_Juhany_128kbps/' 
+    url: 'https://everyayah.com/data/Abdullaah_3awwaad_Al-Juhaynee_128kbps/' 
   },
   { 
     id: 'ar.hudaify', 
     name: 'Ali Al-Hudaify', 
-    // FIX: Switched to 128kbps standard
-    url: 'https://mirrors.quranicaudio.com/everyayah/Ali_Al_Hudaify_128kbps/' 
+    url: 'https://everyayah.com/data/Hudhaify_128kbps/' 
   },
   { 
     id: 'ar.bandar', 
     name: 'Bandar Baleela', 
-    // FIX: Using the high-speed 64kbps mirror (loads fastest on mobile)
     url: 'https://mirrors.quranicaudio.com/everyayah/Bandar_Baleela_64kbps/' 
   },
   { 
