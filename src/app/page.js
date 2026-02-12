@@ -24,7 +24,7 @@ export default function DailyBarakahApp() {
   const [showShamzan, setShowShamzan] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isDark, setIsDark] = useState(true);
-  const [showInstall, setShowInstall] = useState(true); 
+  const [showInstall, setShowInstall] = useState(false); // Default hidden
   
   const [activeMood, setActiveMood] = useState(null); 
   const [surahList, setSurahList] = useState([]);
@@ -160,23 +160,15 @@ export default function DailyBarakahApp() {
 
   useEffect(() => { loadSurahRef.current = loadSurahById; }, [surahList]);
 
-  // --- PLANNER NAVIGATION LOGIC ---
   const handlePlannerRead = (targetPage) => {
-      // Find which Surah contains this page
       const foundSurah = surahList.find(s => {
           if (s.pages && s.pages.length === 2) {
               return targetPage >= s.pages[0] && targetPage <= s.pages[1];
           }
           return false;
       });
-
-      if (foundSurah) {
-          openSurah(foundSurah, targetPage);
-      } else {
-          // Fallback: Just open Surah 1 if not found
-          alert(`Opening Page ${targetPage}...`);
-          loadSurahById(1, 1);
-      }
+      if (foundSurah) openSurah(foundSurah, targetPage);
+      else loadSurahById(1, 1);
   };
 
   const toggleCheck = (type, item) => {
@@ -193,19 +185,34 @@ export default function DailyBarakahApp() {
   };
 
   useEffect(() => {
-      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); setInstallPrompt(e); });
+      // 1. CAPTURE INSTALL PROMPT
+      window.addEventListener('beforeinstallprompt', (e) => { 
+          e.preventDefault(); 
+          setInstallPrompt(e); 
+          setShowInstall(true); // Only show banner if browser allows install!
+      });
+
       setTimeout(() => setShowWelcome(true), 1500); 
       
-      const d = new Date();
-      setGregorianDate(d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-      const hour = d.getHours();
+      // 2. DAILY QUOTE ROTATION (Based on Day of Year)
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 0);
+      const diff = now - start;
+      const oneDay = 1000 * 60 * 60 * 24;
+      const dayOfYear = Math.floor(diff / oneDay);
+      // Pick a quote based on the day number
+      const quoteIndex = dayOfYear % DAILY_INSPIRATIONS.length;
+      setDailyQuote(DAILY_INSPIRATIONS[quoteIndex]);
+
+      setGregorianDate(now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+      
+      const hour = now.getHours();
       if(hour < 12) { setTimeContext("morning"); setActiveCategory("morning_evening"); }
       else if(hour < 18) { setTimeContext("afternoon"); setActiveCategory("daily_life"); }
       else { setTimeContext("evening"); setActiveCategory("protection"); }
 
       const rStart = new Date('2026-02-18T00:00:00');
-      const today = new Date();
-      const diffTime = rStart - today;
+      const diffTime = rStart - now;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       setRamadanStatus(diffDays > 0 ? `${diffDays} Days to Ramadan` : "Ramadan Mubarak!");
 
@@ -221,7 +228,6 @@ export default function DailyBarakahApp() {
               setPrayerTimes(data.data.timings);
               setHijriDate(`${data.data.date.hijri.day} ${data.data.date.hijri.month.en} ${data.data.date.hijri.year}`);
               
-              const now = new Date();
               const curTime = now.getHours() * 60 + now.getMinutes();
               const pOrder = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
               let found = false;
@@ -244,7 +250,6 @@ export default function DailyBarakahApp() {
                   setLocationName(`${geoData.city || "Unknown"}, ${geoData.principalSubdivision || ""}`);
               } catch(e) {}
           }, (err) => {
-              console.warn("GPS Denied, using fallback");
               fetchPrayerData(21.4225, 39.8262, 3); 
               setLocationName("General Location");
           });
@@ -268,15 +273,7 @@ export default function DailyBarakahApp() {
       {activeMood && <MoodDoctor mood={activeMood} onClose={() => setActiveMood(null)} />}
       
       {currentView === 'qibla' && <QiblaCompass onClose={() => setCurrentView('home')} />}
-      
-      {/* KHATAM PLANNER WITH NEW PROPS */}
-      {currentView === 'khatam' && (
-          <KhatamPlanner 
-             onClose={() => setCurrentView('home')} 
-             onRead={handlePlannerRead} 
-          />
-      )}
-      
+      {currentView === 'khatam' && <KhatamPlanner onClose={() => setCurrentView('home')} onRead={handlePlannerRead} />}
       {currentView === 'community' && <DuaFeed onClose={() => setCurrentView('home')} />}
 
       {currentView !== 'quran-reader' && (
@@ -431,7 +428,6 @@ export default function DailyBarakahApp() {
       {currentView === 'tasbih' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-6">Daily Amal Tracker</h2>
-            
             <div className={`p-6 rounded-2xl shadow-sm border mb-6 ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
                 <h3 className="font-bold mb-4 flex items-center gap-2 text-lg"><CheckSquare size={20} className="text-green-600"/> Ramadan Goals</h3>
                 <div className="space-y-4">
@@ -446,7 +442,6 @@ export default function DailyBarakahApp() {
                    ))}
                 </div>
             </div>
-
             <div className={`p-6 rounded-2xl shadow-sm border mb-6 ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
                 <h3 className="font-bold mb-4 text-lg">Daily Prayers</h3>
                 <div className="flex justify-between">
@@ -460,7 +455,6 @@ export default function DailyBarakahApp() {
                    ))}
                 </div>
             </div>
-
             <div className="bg-[#1B4332] text-white p-8 rounded-3xl text-center shadow-xl relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
                 <div className="relative z-10">

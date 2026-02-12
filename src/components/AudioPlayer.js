@@ -4,6 +4,7 @@ import { Play, Pause, ChevronDown } from 'lucide-react';
 
 export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate, onTrackEnd) => {
     const audioRef = useRef(null);
+    const nextAudioRef = useRef(null); // BACKGROUND PRELOADER
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(null);
     const onTrackEndRef = useRef(onTrackEnd);
@@ -18,7 +19,10 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
     }, [playbackRate]);
 
     useEffect(() => {
-        return () => { if (audioRef.current) audioRef.current.pause(); };
+        return () => { 
+            if (audioRef.current) audioRef.current.pause(); 
+            if (nextAudioRef.current) nextAudioRef.current.pause();
+        };
     }, []);
 
     const getUrl = (surahId, ayahNum) => {
@@ -32,15 +36,20 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
         setIsPlaying(false);
     };
 
-    // UPDATED PLAY FUNCTION (Handles Bismillah)
+    // PRELOADER FUNCTION
+    const preloadNext = (index) => {
+        if (!ayahs || !ayahs[index + 1]) return;
+        const nextUrl = getUrl(activeSurah.id, ayahs[index + 1].number);
+        const preload = new Audio(nextUrl);
+        preload.preload = 'auto';
+        nextAudioRef.current = preload; // Keep reference so browser doesn't garbage collect
+    };
+
     const playAyah = (index, skipBismillah = false) => {
         if (!ayahs || !ayahs[index] || !activeSurah) return;
         if (audioRef.current) audioRef.current.pause();
 
-        // LOGIC: Should we play Bismillah first?
-        // 1. We are at start (index 0)
-        // 2. Not Fatiha (1) or Tawbah (9)
-        // 3. Not explicitly skipped (recursive call)
+        // 1. BISMILLAH LOGIC
         if (index === 0 && activeSurah.id !== 1 && activeSurah.id !== 9 && !skipBismillah) {
             const bismillahUrl = `${activeReciter.url}001001.mp3`;
             const bAudio = new Audio(bismillahUrl);
@@ -48,18 +57,12 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
             bAudio.preservesPitch = false;
             audioRef.current = bAudio;
             
-            bAudio.play()
-                .then(() => setIsPlaying(true))
-                .catch(e => console.error("Bismillah Error", e));
-
-            // ON END: Play the actual verse 1
-            bAudio.onended = () => {
-                playAyah(0, true); // True = Don't play Bismillah again
-            };
+            bAudio.play().then(() => setIsPlaying(true)).catch(e => console.error(e));
+            bAudio.onended = () => { playAyah(0, true); };
             return;
         }
 
-        // NORMAL PLAYBACK
+        // 2. PLAY CURRENT TRACK
         const url = getUrl(activeSurah.id, ayahs[index].number);
         const newAudio = new Audio(url);
         newAudio.playbackRate = playbackRate;
@@ -67,10 +70,20 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
         newAudio.preload = "auto";
         audioRef.current = newAudio;
 
+        // Use Media Session API (Tell Phone: "I am playing audio")
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.setActionHandler('play', togglePlay);
+            navigator.mediaSession.setActionHandler('pause', togglePlay);
+        }
+
         const playPromise = newAudio.play();
         if (playPromise !== undefined) {
-            playPromise.then(() => { setIsPlaying(true); setCurrentIndex(index); })
-                       .catch(e => console.error("Playback error:", e));
+            playPromise.then(() => { 
+                setIsPlaying(true); 
+                setCurrentIndex(index); 
+                // 3. TRIGGER PRELOAD FOR NEXT TRACK
+                preloadNext(index);
+            }).catch(e => console.error("Playback error:", e));
         }
 
         newAudio.onended = () => { if (onTrackEndRef.current) onTrackEndRef.current(index); };
