@@ -10,8 +10,8 @@ export default function QuranReader({
   const [showReciterMenu, setShowReciterMenu] = useState(false);
   const [viewMode, setViewMode] = useState('mushaf'); 
   
-  // TRANSLATION POPUP STATE
-  const [translationModal, setTranslationModal] = useState(null); // Stores the ayah object
+  // TRANSLATION POPUP STATE (Now stores Index for navigation)
+  const [modalIndex, setModalIndex] = useState(null); 
   
   // GESTURE STATE
   const touchStartX = useRef(null);
@@ -28,7 +28,7 @@ export default function QuranReader({
     }
   }, [currentIndex]);
 
-  // --- NEW SMART NAVIGATION LOGIC ---
+  // --- SMART NAVIGATION LOGIC ---
   const handleNextPage = () => {
     const lastPageOfSurah = ayahs[ayahs.length - 1]?.page;
     if (currentPage >= lastPageOfSurah) { 
@@ -67,8 +67,7 @@ export default function QuranReader({
       isScrolling.current = false;
       longPressTimer.current = setTimeout(() => {
           // Trigger Translation Modal
-          setTranslationModal(ayahs[ayahIndex]);
-          // We do NOT play audio here
+          setModalIndex(ayahIndex); // Set Index instead of Object
       }, 600); // 600ms hold time
   };
 
@@ -165,7 +164,7 @@ export default function QuranReader({
                      return (
                         <span 
                             key={i} 
-                            // REPLACED onClick with Touch Handlers for Long Press
+                            // Touch Handlers for Long Press & Play
                             onMouseDown={() => handleTouchStart(globalIndex)}
                             onMouseUp={() => handleTouchEnd(globalIndex)}
                             onTouchStart={() => handleTouchStart(globalIndex)}
@@ -189,7 +188,7 @@ export default function QuranReader({
                      return (
                         <div 
                             key={i} 
-                            // List Mode also supports Long Press
+                            // Touch Handlers for Long Press & Play
                             onMouseDown={() => handleTouchStart(globalIndex)}
                             onMouseUp={() => handleTouchEnd(globalIndex)}
                             onTouchStart={() => handleTouchStart(globalIndex)}
@@ -224,36 +223,55 @@ export default function QuranReader({
           </div>
       </div>
 
-      {/* TRANSLATION MODAL OVERLAY */}
-      {translationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" onClick={() => setTranslationModal(null)}>
+      {/* TRANSLATION MODAL OVERLAY (With Navigation) */}
+      {modalIndex !== null && ayahs[modalIndex] && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" onClick={() => setModalIndex(null)}>
               <div className="bg-[#FAF9F6] w-full max-w-md rounded-3xl p-6 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => setTranslationModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-100 rounded-full p-1"><X size={20} /></button>
+                  <button onClick={() => setModalIndex(null)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-100 rounded-full p-1"><X size={20} /></button>
                   
+                  {/* Modal Header */}
                   <div className="text-center mb-6">
                       <span className="bg-[#1B4332] text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">
-                          {activeSurah.name_simple} • Ayah {translationModal.number}
+                          {activeSurah.name_simple} • Ayah {ayahs[modalIndex].number}
                       </span>
                   </div>
 
-                  <div className="max-h-[60vh] overflow-y-auto space-y-6">
-                      {/* Arabic */}
+                  {/* Modal Content */}
+                  <div className="max-h-[50vh] overflow-y-auto space-y-6">
                       <p className="text-right font-serif text-3xl leading-loose dir-rtl text-gray-800 border-b border-gray-200 pb-4">
-                          {translationModal.arabic}
+                          {ayahs[modalIndex].arabic}
                       </p>
                       
-                      {/* Translations */}
+                      {/* English */}
                       <div>
                           <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">English</p>
-                          <p className="text-gray-700 text-lg leading-relaxed">{translationModal.english}</p>
+                          <p className="text-gray-700 text-lg leading-relaxed">{ayahs[modalIndex].english}</p>
                       </div>
                       
-                      {translationModal.hausa && (
+                      {/* Hausa */}
+                      {ayahs[modalIndex].hausa && (
                           <div className="bg-green-50 p-4 rounded-xl border border-green-100">
                               <p className="text-[10px] text-green-700 font-bold uppercase mb-1">Hausa</p>
-                              <p className="text-green-900 text-md italic">{translationModal.hausa}</p>
+                              <p className="text-green-900 text-md italic">{ayahs[modalIndex].hausa}</p>
                           </div>
                       )}
+                  </div>
+
+                  {/* Modal Navigation (Buttons) */}
+                  <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+                      <button 
+                        onClick={() => modalIndex > 0 && setModalIndex(modalIndex - 1)}
+                        className={`p-2 rounded-full bg-gray-100 ${modalIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-green-100 text-[#1B4332]'}`}
+                      >
+                          <ChevronLeft size={24}/>
+                      </button>
+                      <span className="text-xs font-bold text-gray-400">Navigate Verses</span>
+                      <button 
+                        onClick={() => modalIndex < ayahs.length - 1 && setModalIndex(modalIndex + 1)}
+                        className={`p-2 rounded-full bg-gray-100 ${modalIndex === ayahs.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-green-100 text-[#1B4332]'}`}
+                      >
+                          <ChevronRight size={24}/>
+                      </button>
                   </div>
               </div>
           </div>

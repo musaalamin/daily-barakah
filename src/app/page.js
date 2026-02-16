@@ -94,6 +94,7 @@ export default function DailyBarakahApp() {
       setPlaybackRate(speeds[nextIdx]);
   };
 
+  // --- MAIN OPEN SURAH FUNCTION ---
   const openSurah = async (surah, forcedPage = null, shouldAutoPlay = false) => {
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
@@ -106,13 +107,14 @@ export default function DailyBarakahApp() {
       setAyahs([]); 
 
       try {
+          // 1. Fetch Arabic (Base)
           const arabicRes = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surah.id}?language=en&words=false&per_page=300&fields=text_uthmani,page_number`, { signal });
           if (!arabicRes.ok) throw new Error("API Error");
           const arabicData = await arabicRes.json();
 
           const processed = arabicData.verses.map(v => ({
               id: v.id, number: v.verse_number, arabic: v.text_uthmani, page: v.page_number,
-              english: "Loading...", hausa: ""
+              english: "Loading translation...", hausa: ""
           }));
 
           const pgs = {};
@@ -123,6 +125,7 @@ export default function DailyBarakahApp() {
           setCurrentPageNum(forcedPage || processed[0]?.page || 1); 
           setLoading(false); 
 
+          // Auto Play Trigger
           if (shouldAutoPlay) {
               setTimeout(() => { if (playAyahRef.current) playAyahRef.current(0); }, 500);
           }
@@ -132,14 +135,22 @@ export default function DailyBarakahApp() {
           setRecentReads(updatedRecents);
           localStorage.setItem('barakah_recents', JSON.stringify(updatedRecents));
 
+          // 2. Fetch English (UPDATED: Using QuranEnc for instant loading)
           try {
-              const engRes = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surah.id}?language=en&words=false&translations=131&per_page=300`, { signal });
+              const engRes = await fetch(`https://quranenc.com/api/v1/translation/sura/english_saheeh/${surah.id}`, { signal });
               const engData = await engRes.json();
-              const engMap = {};
-              if (engData.verses) engData.verses.forEach(v => { if (v.translations[0]) engMap[v.verse_number] = v.translations[0].text.replace(/<[^>]*>?/gm, ''); });
-              setAyahs(prev => prev.map(item => ({ ...item, english: engMap[item.number] || "Translation unavailable" })));
-          } catch(e) { console.warn("Eng Trans Failed"); }
+              if(engData.result) {
+                  const engMap = {};
+                  engData.result.forEach(i => engMap[i.aya] = i.translation);
+                  
+                  setAyahs(prev => prev.map(item => ({ 
+                      ...item, 
+                      english: engMap[item.number] || "Translation unavailable" 
+                  })));
+              }
+          } catch(e) { console.warn("Eng Trans Failed", e); }
 
+          // 3. Fetch Hausa (QuranEnc)
           try {
               const hausaRes = await fetch(`https://quranenc.com/api/v1/translation/sura/hausa_gummi/${surah.id}`, { signal });
               const hausaData = await hausaRes.json();
@@ -185,22 +196,19 @@ export default function DailyBarakahApp() {
   };
 
   useEffect(() => {
-      // 1. CAPTURE INSTALL PROMPT
       window.addEventListener('beforeinstallprompt', (e) => { 
           e.preventDefault(); 
           setInstallPrompt(e); 
-          setShowInstall(true); // Only show banner if browser allows install!
+          setShowInstall(true); 
       });
 
       setTimeout(() => setShowWelcome(true), 1500); 
       
-      // 2. DAILY QUOTE ROTATION (Based on Day of Year)
       const now = new Date();
       const start = new Date(now.getFullYear(), 0, 0);
       const diff = now - start;
       const oneDay = 1000 * 60 * 60 * 24;
       const dayOfYear = Math.floor(diff / oneDay);
-      // Pick a quote based on the day number
       const quoteIndex = dayOfYear % DAILY_INSPIRATIONS.length;
       setDailyQuote(DAILY_INSPIRATIONS[quoteIndex]);
 
@@ -382,7 +390,7 @@ export default function DailyBarakahApp() {
                activeSurah={activeSurah} 
                ayahs={ayahs} 
                pages={pages}
-               surahList={surahList} // <--- NEW: Added this prop for Navigation Logic
+               surahList={surahList} 
                currentPage={currentPageNum} 
                setCurrentPage={setCurrentPageNum} 
                activeReciter={activeReciter} 
@@ -435,6 +443,7 @@ export default function DailyBarakahApp() {
       {currentView === 'tasbih' && (
         <div className="pb-24 pt-6 px-6">
             <h2 className="text-2xl font-bold text-[#1B4332] mb-6">Daily Amal Tracker</h2>
+            
             <div className={`p-6 rounded-2xl shadow-sm border mb-6 ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
                 <h3 className="font-bold mb-4 flex items-center gap-2 text-lg"><CheckSquare size={20} className="text-green-600"/> Ramadan Goals</h3>
                 <div className="space-y-4">
@@ -449,6 +458,7 @@ export default function DailyBarakahApp() {
                    ))}
                 </div>
             </div>
+
             <div className={`p-6 rounded-2xl shadow-sm border mb-6 ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'}`}>
                 <h3 className="font-bold mb-4 text-lg">Daily Prayers</h3>
                 <div className="flex justify-between">
@@ -462,6 +472,7 @@ export default function DailyBarakahApp() {
                    ))}
                 </div>
             </div>
+
             <div className="bg-[#1B4332] text-white p-8 rounded-3xl text-center shadow-xl relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
                 <div className="relative z-10">
