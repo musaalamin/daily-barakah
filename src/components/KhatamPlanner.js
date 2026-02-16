@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, BookOpen, Calendar, CheckCircle, Edit3, PlayCircle, Save, Settings } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar, CheckCircle, Edit3, PlayCircle, Save, Settings, Bell } from 'lucide-react';
 
 export default function KhatamPlanner({ onClose, onRead }) {
   const [mode, setMode] = useState('days'); // 'days' (Target Duration) or 'pages' (Daily Pace)
@@ -25,7 +25,6 @@ export default function KhatamPlanner({ onClose, onRead }) {
       setTargetValue(newTarget);
       setCurrentPage(newPage);
       localStorage.setItem('khatam_data', JSON.stringify({ mode: newMode, targetValue: newTarget, page: newPage }));
-      // Don't close editing immediately if just updating target value
   };
 
   // Logic Engine
@@ -45,6 +44,17 @@ export default function KhatamPlanner({ onClose, onRead }) {
   const progress = Math.min((currentPage / totalPages) * 100, 100);
   const pagesRemaining = totalPages - currentPage;
   const daysRemaining = pagesPerDay > 0 ? Math.ceil(pagesRemaining / pagesPerDay) : 0;
+
+  // --- NEW: CALENDAR REMINDER FUNCTION ---
+  const addToCalendar = () => {
+      const title = "📖 Read Quran - Daily Barakah";
+      const details = `Goal: Read ${pagesPerDay} pages today. Resume at Page ${currentPage}.`;
+      
+      // Google Calendar Link (Recurring Daily)
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(details)}&recur=RRULE:FREQ=DAILY`;
+      
+      window.open(googleUrl, '_blank');
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-[#FDFCF8] flex flex-col overflow-y-auto animate-in slide-in-from-right">
@@ -103,7 +113,15 @@ export default function KhatamPlanner({ onClose, onRead }) {
              </div>
          </div>
 
-         {/* 2. FLEXIBLE CONFIGURATION (THE FIX) */}
+         {/* 2. REMINDER BUTTON (NEW) */}
+         <button 
+            onClick={addToCalendar}
+            className="w-full bg-orange-50 border border-orange-100 text-orange-800 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-orange-100 transition-colors"
+         >
+             <Bell size={20} /> Set Daily Reminder (Free)
+         </button>
+
+         {/* 3. FLEXIBLE CONFIGURATION */}
          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
              <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-gray-800 flex items-center gap-2"><Settings className="text-[#1B4332]" size={20}/> Planner Settings</h3>
