@@ -1,19 +1,24 @@
 'use client';
 import React, { useEffect, useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Repeat, ChevronDown, AlignJustify, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Repeat, ChevronDown, AlignJustify, List, X, BookOpen } from 'lucide-react';
 import { RECITERS } from '../data/quranData';
 
 export default function QuranReader({ 
-  activeSurah, ayahs, pages, currentPage, setCurrentPage, 
+  activeSurah, ayahs, pages, surahList, currentPage, setCurrentPage, 
   activeReciter, onReciterChange, onBack, onSurahChange, audioState, isDark
 }) {
   const [showReciterMenu, setShowReciterMenu] = useState(false);
   const [viewMode, setViewMode] = useState('mushaf'); 
   
-  // SWIPE STATE
+  // TRANSLATION POPUP STATE
+  const [translationModal, setTranslationModal] = useState(null); // Stores the ayah object
+  
+  // GESTURE STATE
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
-  
+  const longPressTimer = useRef(null);
+  const isScrolling = useRef(false);
+
   const { isPlaying, setRepeatMode, repeatMode, currentIndex, playAyah } = audioState;
 
   useEffect(() => {
@@ -23,22 +28,74 @@ export default function QuranReader({
     }
   }, [currentIndex]);
 
+  // --- NEW SMART NAVIGATION LOGIC ---
   const handleNextPage = () => {
     const lastPageOfSurah = ayahs[ayahs.length - 1]?.page;
-    if (currentPage >= lastPageOfSurah) { if (activeSurah.id < 114) onSurahChange(activeSurah.id + 1); } 
-    else { setCurrentPage(p => p + 1); }
+    if (currentPage >= lastPageOfSurah) { 
+        if (activeSurah.id < 114) {
+            // Go to next Surah, Page 1
+            onSurahChange(activeSurah.id + 1, null, true); 
+        }
+    } else { 
+        setCurrentPage(p => p + 1); 
+    }
   };
 
   const handlePrevPage = () => {
     const firstPageOfSurah = ayahs[0]?.page;
-    if (currentPage <= firstPageOfSurah) { if (activeSurah.id > 1) onSurahChange(activeSurah.id - 1); } 
-    else { setCurrentPage(p => p - 1); }
+    
+    if (currentPage <= firstPageOfSurah) { 
+        if (activeSurah.id > 1) {
+            // LOGIC FIX: Find previous Surah and go to its LAST PAGE
+            const prevSurah = surahList.find(s => s.id === activeSurah.id - 1);
+            if (prevSurah && prevSurah.pages) {
+                // api.quran.com gives pages as [start, end]
+                const lastPageOfPrev = prevSurah.pages[1]; 
+                onSurahChange(activeSurah.id - 1, lastPageOfPrev);
+            } else {
+                // Fallback if data missing
+                onSurahChange(activeSurah.id - 1);
+            }
+        } 
+    } else { 
+        setCurrentPage(p => p - 1); 
+    }
   };
 
-  // SWIPE LOGIC
-  const onTouchStart = (e) => { touchStartX.current = e.targetTouches[0].clientX; touchEndX.current = null; };
-  const onTouchMove = (e) => { touchEndX.current = e.targetTouches[0].clientX; };
-  const onTouchEnd = () => {
+  // --- LONG PRESS INTERACTION ---
+  const handleTouchStart = (ayahIndex) => {
+      isScrolling.current = false;
+      longPressTimer.current = setTimeout(() => {
+          // Trigger Translation Modal
+          setTranslationModal(ayahs[ayahIndex]);
+          // We do NOT play audio here
+      }, 600); // 600ms hold time
+  };
+
+  const handleTouchEnd = (ayahIndex) => {
+      // If timer exists, it means we let go BEFORE 600ms -> It's a TAP
+      if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+          if (!isScrolling.current) {
+              playAyah(ayahIndex); // Play Audio
+          }
+      }
+  };
+
+  const handleTouchMove = () => {
+      // If user moves finger, cancel everything (it's a scroll)
+      isScrolling.current = true;
+      if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+      }
+  };
+
+  // Swipe for Page Turning
+  const onSwipeStart = (e) => { touchStartX.current = e.targetTouches[0].clientX; touchEndX.current = null; };
+  const onSwipeMove = (e) => { touchEndX.current = e.targetTouches[0].clientX; };
+  const onSwipeEnd = () => {
     if (!touchStartX.current || !touchEndX.current) return;
     const distance = touchStartX.current - touchEndX.current;
     if (distance > 50) handleNextPage();
@@ -51,22 +108,13 @@ export default function QuranReader({
     setRepeatMode(next);
   };
 
-  // BISMILLAH HEADER COMPONENT
   const BismillahHeader = () => {
-      // Surah 9 (At-Tawbah) does not have Bismillah
       if (activeSurah.id === 9 || activeSurah.id === 1) return null; 
-      
-      // Only show on the FIRST page of the Surah
       const firstPageOfSurah = ayahs[0]?.page;
       if (currentPage !== firstPageOfSurah) return null;
-
       return (
           <div className="text-center mb-6 mt-2">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/2/27/Basmala.svg" 
-                alt="Bismillah" 
-                className={`h-12 mx-auto opacity-80 ${isDark ? 'invert' : ''}`}
-              />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/27/Basmala.svg" alt="Bismillah" className={`h-12 mx-auto opacity-80 ${isDark ? 'invert' : ''}`}/>
           </div>
       );
   };
@@ -102,10 +150,10 @@ export default function QuranReader({
         </div>
       </div>
 
-      {/* CONTENT */}
+      {/* CONTENT LAYER */}
       <div 
         className="flex-1 overflow-y-auto p-4 scroll-smooth relative"
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        onTouchStart={onSwipeStart} onTouchMove={onSwipeMove} onTouchEnd={onSwipeEnd}
       >
          <BismillahHeader />
 
@@ -115,7 +163,16 @@ export default function QuranReader({
                  {(pages[currentPage] || []).map((ayah, i) => {
                      const globalIndex = ayahs.findIndex(a => a.id === ayah.id);
                      return (
-                        <span key={i} onClick={() => playAyah(globalIndex)} className={`cursor-pointer rounded px-1 transition-colors duration-300 ${currentIndex === globalIndex ? 'text-[#1B4332] bg-green-200 font-bold' : isDark ? 'text-gray-200 hover:bg-gray-800' : 'text-black hover:bg-[#F3EACF]'}`}>
+                        <span 
+                            key={i} 
+                            // REPLACED onClick with Touch Handlers for Long Press
+                            onMouseDown={() => handleTouchStart(globalIndex)}
+                            onMouseUp={() => handleTouchEnd(globalIndex)}
+                            onTouchStart={() => handleTouchStart(globalIndex)}
+                            onTouchEnd={() => handleTouchEnd(globalIndex)}
+                            onTouchMove={handleTouchMove}
+                            className={`cursor-pointer rounded px-1 transition-colors duration-300 select-none ${currentIndex === globalIndex ? 'text-[#1B4332] bg-green-200 font-bold' : isDark ? 'text-gray-200 hover:bg-gray-800' : 'text-black hover:bg-[#F3EACF]'}`}
+                        >
                             {ayah.arabic} 
                             <span className={`inline-flex items-center justify-center w-6 h-6 border ${isDark ? 'border-gray-500' : 'border-[#1B4332]'} rounded-full text-[10px] mx-1 select-none font-sans`}>{ayah.number}</span>
                         </span>
@@ -130,7 +187,16 @@ export default function QuranReader({
                  {(pages[currentPage] || []).map((ayah, i) => {
                      const globalIndex = ayahs.findIndex(a => a.id === ayah.id);
                      return (
-                        <div key={i} onClick={() => playAyah(globalIndex)} className={`p-4 rounded-xl border-b transition-all ${currentIndex === globalIndex ? 'bg-green-50/10 border-green-500' : isDark ? 'border-gray-800 bg-gray-900' : 'border-gray-100 bg-white'}`}>
+                        <div 
+                            key={i} 
+                            // List Mode also supports Long Press
+                            onMouseDown={() => handleTouchStart(globalIndex)}
+                            onMouseUp={() => handleTouchEnd(globalIndex)}
+                            onTouchStart={() => handleTouchStart(globalIndex)}
+                            onTouchEnd={() => handleTouchEnd(globalIndex)}
+                            onTouchMove={handleTouchMove}
+                            className={`p-4 rounded-xl border-b transition-all select-none ${currentIndex === globalIndex ? 'bg-green-50/10 border-green-500' : isDark ? 'border-gray-800 bg-gray-900' : 'border-gray-100 bg-white'}`}
+                        >
                             <div className="flex justify-between items-center mb-3">
                                 <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-1 rounded-full">{activeSurah.id}:{ayah.number}</span>
                             </div>
@@ -157,6 +223,42 @@ export default function QuranReader({
               </button>
           </div>
       </div>
+
+      {/* TRANSLATION MODAL OVERLAY */}
+      {translationModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" onClick={() => setTranslationModal(null)}>
+              <div className="bg-[#FAF9F6] w-full max-w-md rounded-3xl p-6 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setTranslationModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-red-500 bg-gray-100 rounded-full p-1"><X size={20} /></button>
+                  
+                  <div className="text-center mb-6">
+                      <span className="bg-[#1B4332] text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">
+                          {activeSurah.name_simple} • Ayah {translationModal.number}
+                      </span>
+                  </div>
+
+                  <div className="max-h-[60vh] overflow-y-auto space-y-6">
+                      {/* Arabic */}
+                      <p className="text-right font-serif text-3xl leading-loose dir-rtl text-gray-800 border-b border-gray-200 pb-4">
+                          {translationModal.arabic}
+                      </p>
+                      
+                      {/* Translations */}
+                      <div>
+                          <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">English</p>
+                          <p className="text-gray-700 text-lg leading-relaxed">{translationModal.english}</p>
+                      </div>
+                      
+                      {translationModal.hausa && (
+                          <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+                              <p className="text-[10px] text-green-700 font-bold uppercase mb-1">Hausa</p>
+                              <p className="text-green-900 text-md italic">{translationModal.hausa}</p>
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      )}
+
     </div>
   );
 }

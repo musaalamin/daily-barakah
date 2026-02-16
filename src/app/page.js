@@ -24,7 +24,7 @@ export default function DailyBarakahApp() {
   const [showShamzan, setShowShamzan] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isDark, setIsDark] = useState(true);
-  const [showInstall, setShowInstall] = useState(true); // Default hidden
+  const [showInstall, setShowInstall] = useState(false); // Default hidden
   
   const [activeMood, setActiveMood] = useState(null); 
   const [surahList, setSurahList] = useState([]);
@@ -379,11 +379,18 @@ export default function DailyBarakahApp() {
       {currentView === 'quran-reader' && activeSurah && (
           <>
             <QuranReader 
-               activeSurah={activeSurah} ayahs={ayahs} pages={pages}
-               currentPage={currentPageNum} setCurrentPage={setCurrentPageNum} 
-               activeReciter={activeReciter} onReciterChange={setActiveReciter}
-               onBack={() => setCurrentView('quran-list')} onSurahChange={loadSurahById}
-               audioState={{ isPlaying, togglePlay, currentIndex, repeatMode, setRepeatMode, playAyah }} isDark={isDark}
+               activeSurah={activeSurah} 
+               ayahs={ayahs} 
+               pages={pages}
+               surahList={surahList} // <--- NEW: Added this prop for Navigation Logic
+               currentPage={currentPageNum} 
+               setCurrentPage={setCurrentPageNum} 
+               activeReciter={activeReciter} 
+               onReciterChange={setActiveReciter}
+               onBack={() => setCurrentView('quran-list')} 
+               onSurahChange={loadSurahById}
+               audioState={{ isPlaying, togglePlay, currentIndex, repeatMode, setRepeatMode, playAyah }} 
+               isDark={isDark}
             />
             <GlobalPlayerBar isPlaying={isPlaying} reciterName={activeReciter.name.split(' ')[0]} onTogglePlay={togglePlay} playbackRate={playbackRate} onSpeedChange={cycleSpeed} onClick={() => {}} />
           </>
