@@ -11,10 +11,12 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
 
     useEffect(() => { onTrackEndRef.current = onTrackEnd; }, [onTrackEnd]);
 
+    // UPDATE SETTINGS WHEN SPEED CHANGES
     useEffect(() => {
         if (audioRef.current) {
             audioRef.current.playbackRate = playbackRate;
-            audioRef.current.preservesPitch = false; 
+            // FIX: Set to TRUE so voice stays deep even at 2.0x speed
+            audioRef.current.preservesPitch = true; 
         }
     }, [playbackRate]);
 
@@ -42,7 +44,7 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
         const nextUrl = getUrl(activeSurah.id, ayahs[index + 1].number);
         const preload = new Audio(nextUrl);
         preload.preload = 'auto';
-        nextAudioRef.current = preload; // Keep reference so browser doesn't garbage collect
+        nextAudioRef.current = preload; 
     };
 
     const playAyah = (index, skipBismillah = false) => {
@@ -54,7 +56,8 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
             const bismillahUrl = `${activeReciter.url}001001.mp3`;
             const bAudio = new Audio(bismillahUrl);
             bAudio.playbackRate = playbackRate;
-            bAudio.preservesPitch = false;
+            // FIX: Keep voice natural
+            bAudio.preservesPitch = true;
             audioRef.current = bAudio;
             
             bAudio.play().then(() => setIsPlaying(true)).catch(e => console.error(e));
@@ -66,7 +69,8 @@ export const useGaplessAudio = (activeReciter, ayahs, activeSurah, playbackRate,
         const url = getUrl(activeSurah.id, ayahs[index].number);
         const newAudio = new Audio(url);
         newAudio.playbackRate = playbackRate;
-        newAudio.preservesPitch = false;
+        // FIX: Keep voice natural
+        newAudio.preservesPitch = true;
         newAudio.preload = "auto";
         audioRef.current = newAudio;
 

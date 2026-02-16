@@ -223,7 +223,7 @@ export default function QuranReader({
           </div>
       </div>
 
-      {/* TRANSLATION MODAL OVERLAY (With Navigation) */}
+      {/* MODAL OVERLAY (With Navigation) */}
       {modalIndex !== null && ayahs[modalIndex] && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in" onClick={() => setModalIndex(null)}>
               <div className="bg-[#FAF9F6] w-full max-w-md rounded-3xl p-6 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
